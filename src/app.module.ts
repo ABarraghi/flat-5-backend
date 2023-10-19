@@ -9,6 +9,7 @@ import { TransformInterceptor } from '@core/interceptor/transform.interceptor';
 import { validationOptions } from '@config/validation';
 import { AllExceptionsFilter } from '@core/filter/all-exception.filter';
 import { LoggingModule } from '@core/logger/logging.module';
+import { LoadModule } from '@module/load/load.module';
 
 @Module({
   imports: [
@@ -18,7 +19,8 @@ import { LoggingModule } from '@core/logger/logging.module';
       load: config
     }),
     LoggingModule,
-    ExceptionModule
+    ExceptionModule,
+    LoadModule
   ],
   controllers: [AppController],
   providers: [
