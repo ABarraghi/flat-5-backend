@@ -33,7 +33,10 @@ export class AllExceptionsFilter extends BaseExceptionFilter {
       }
       if (errors.children) {
         messagesFormatted[errors.property] = messagesFormatted[errors.property] ?? {};
-        AllExceptionsFilter.formatValidationsMessages(errors.children, messagesFormatted[errors.property]);
+        AllExceptionsFilter.formatValidationsMessages(
+          errors.children,
+          messagesFormatted[errors.property]
+        );
       }
     }
 
@@ -64,7 +67,9 @@ export class AllExceptionsFilter extends BaseExceptionFilter {
       const formatErrors = AllExceptionsFilter.format(exception);
       formattedResponse = {
         statusCode: exception.getStatus(),
-        error: formatErrors['errorCode'] ? { [formatErrors['errorCode']]: formatErrors['message'] } : formatErrors,
+        error: formatErrors['errorCode']
+          ? { [formatErrors['errorCode']]: formatErrors['message'] }
+          : formatErrors,
         message: formatErrors['message'],
         errorCode: formatErrors['errorCode']
       };

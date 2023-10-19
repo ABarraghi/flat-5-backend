@@ -1,6 +1,6 @@
 import * as Sentry from '@sentry/node';
 import { Logger } from '@nestjs/common';
-import { Obj } from '@core/support/obj';
+import { Obj } from '@core/util/obj';
 import { Integrations } from '@sentry/tracing';
 import { CaptureContext } from '@sentry/types';
 
@@ -136,7 +136,9 @@ export class Logging {
   }
 
   private static formatMessage(message: any, context: string): string {
-    const output = Obj.isNotNullObject(message) ? `${'Object:'}\n${JSON.stringify(message, null, 2)}\n` : message;
+    const output = Obj.isNotNullObject(message)
+      ? `${'Object:'}\n${JSON.stringify(message, null, 2)}\n`
+      : message;
 
     return `${context}${output}`;
   }

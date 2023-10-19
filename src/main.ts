@@ -3,6 +3,8 @@ import { AppModule } from './app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import * as compression from 'compression';
 import { useContainer } from 'class-validator';
+import { json } from 'express';
+import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -24,6 +26,11 @@ async function bootstrap() {
     fallbackOnErrors: true
   });
 
-  await app.listen(3000);
+  const configService = app.get(ConfigService);
+  app.use(json({ limit: configService.get('app.bodyParser.limit', '100kb') }));
+
+  const port = configService.get('app.port');
+
+  await app.listen(port);
 }
 bootstrap();

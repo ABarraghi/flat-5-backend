@@ -3,6 +3,7 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ServerResponse } from 'http';
 import { instanceToPlain } from 'class-transformer';
+// eslint-disable-next-line max-len
 import { SkipTransformSymbol } from '@core/interceptor/decorator/skip-transform-interceptor.decorator';
 
 export interface Response<T> {
