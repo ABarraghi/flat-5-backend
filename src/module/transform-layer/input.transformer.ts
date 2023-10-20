@@ -32,20 +32,22 @@ export class InputTransformer {
       //   appointmentEndDateTime: '2023-10-17T12:00:00-05:00'
       // }
     };
-    input.destination = {
-      location: {
-        latitude: value.to.lat,
-        longitude: value.to.lng
-      }
-      // deadheadRadius: {
-      //   value: 120,
-      //   unit: 'Miles'
-      // },
-      // appointment: {
-      //   appointmentStartDateTime: '2023-10-16T14:00:00-05:00',
-      //   appointmentEndDateTime: '2023-10-17T12:00:00-05:00'
-      // }
-    };
+    if (value.to) {
+      input.destination = {
+        location: {
+          latitude: value.to.lat,
+          longitude: value.to.lng
+        }
+        // deadheadRadius: {
+        //   value: 120,
+        //   unit: 'Miles'
+        // },
+        // appointment: {
+        //   appointmentStartDateTime: '2023-10-16T14:00:00-05:00',
+        //   appointmentEndDateTime: '2023-10-17T12:00:00-05:00'
+        // }
+      };
+    }
     input.equipmentType = 'V';
     input.mode = 'TL_LTL';
 
