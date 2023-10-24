@@ -1,5 +1,9 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { CoyoteInput } from '@module/transform-layer/interface/coyote/coyote-input.interface';
+import {
+  CoyoteBookLoadInput,
+  CoyoteBookLoadSimpleInput,
+  CoyoteInput
+} from '@module/transform-layer/interface/coyote/coyote-input.interface';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { catchError, firstValueFrom } from 'rxjs';
@@ -7,6 +11,7 @@ import * as dayjs from 'dayjs';
 import { Logging } from '@core/logger/logging.service';
 import {
   CoyoteAuthenticationResponse,
+  CoyoteLoadDetailResponse,
   CoyoteSearchLoadResponse
 } from '@module/transform-layer/interface/coyote/coyote-response.interface';
 
@@ -71,6 +76,49 @@ export class CoyoteBrokerService {
         catchError(e => {
           Logging.error('[Coyote] Search Available Loads got error', e);
           throw new BadRequestException('CYT002');
+        })
+      );
+    const res = await firstValueFrom(request);
+
+    return res.data;
+  }
+
+  async getLoadDetail(loadId: number): Promise<CoyoteLoadDetailResponse> {
+    const url = `${this.coyoteConfig.host}/${this.coyoteConfig.apiPrefix}/AvailableLoads/${loadId}`;
+    const request = this.httpService
+      .get<CoyoteLoadDetailResponse>(url, {
+        headers: {
+          Authorization: await this.generateAccessToken()
+        }
+      })
+      .pipe(
+        catchError(e => {
+          Logging.error('[Coyote] Get Load Detail got error', e);
+          throw new BadRequestException('CYT003');
+        })
+      );
+    const res = await firstValueFrom(request);
+
+    return res.data;
+  }
+
+  async bookLoad(input: CoyoteBookLoadSimpleInput): Promise<any> {
+    const loadDetail = await this.getLoadDetail(input.loadId);
+    const data = new CoyoteBookLoadInput({
+      load: loadDetail,
+      carrierId: input.carrierId
+    });
+    const url = `${this.coyoteConfig.host}/${this.coyoteConfig.apiPrefix}/Booking`;
+    const request = this.httpService
+      .post<any>(url, data, {
+        headers: {
+          Authorization: await this.generateAccessToken()
+        }
+      })
+      .pipe(
+        catchError(e => {
+          Logging.error('[Coyote] Book Load got error', e);
+          throw new BadRequestException('CYT004');
         })
       );
     const res = await firstValueFrom(request);

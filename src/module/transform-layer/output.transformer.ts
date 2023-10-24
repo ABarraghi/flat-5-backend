@@ -1,50 +1,44 @@
 import { ApiBrokers } from '@module/transform-layer/interface/flat-5/common.interface';
-import { CoyoteLoad } from '@module/transform-layer/interface/coyote/coyote-response.interface';
+import {
+  CoyoteLoad,
+  CoyoteSearchLoadResponse
+} from '@module/transform-layer/interface/coyote/coyote-response.interface';
+import { Injectable } from '@nestjs/common';
+import { CoyoteOutputTransformer } from '@module/transform-layer/coyote/coyote-output.transformer';
 import { LoadInterface } from '@module/transform-layer/interface/flat-5/load.interface';
 
 export interface OutputTransformerOptions {
   from: ApiBrokers;
 }
 
+@Injectable()
 export class OutputTransformer {
-  static transform(value: any, options?: OutputTransformerOptions) {
+  constructor(private coyoteOutputTransformer: CoyoteOutputTransformer) {}
+
+  transformSearchAvailableLoads(value: any, options?: OutputTransformerOptions): LoadInterface[] {
     switch (options.from) {
       case 'coyote':
-        return OutputTransformer.transformFromCoyote(value as CoyoteLoad);
+        return this.coyoteOutputTransformer.searchAvailableLoads(value as CoyoteSearchLoadResponse);
       default:
         return value;
     }
   }
 
-  static transformFromCoyote(value: CoyoteLoad): LoadInterface {
-    const output = new LoadInterface();
-    output.broker = 'coyote';
-    output.loadId = value.loadId.toString();
-    const pickupStop = value.stops.find(stop => stop.stopType === 'Pickup');
-    output.pickupStop = {
-      address: pickupStop.facility.address,
-      coordinates: {
-        latitude: pickupStop.facility.geoCoordinates.latitude,
-        longitude: pickupStop.facility.geoCoordinates.longitude
-      },
-      appointment: {
-        appointmentStartDateTimeUtc: pickupStop.appointment.appointmentStartDateTimeUtc,
-        appointmentEndDateTimeUtc: pickupStop.appointment.appointmentEndDateTimeUtc
-      }
-    };
-    const deliveryStop = value.stops.find(stop => stop.stopType === 'Delivery');
-    output.deliveryStop = {
-      address: deliveryStop.facility.address,
-      coordinates: {
-        latitude: deliveryStop.facility.geoCoordinates.latitude,
-        longitude: deliveryStop.facility.geoCoordinates.longitude
-      },
-      appointment: {
-        appointmentStartDateTimeUtc: deliveryStop.appointment.appointmentStartDateTimeUtc,
-        appointmentEndDateTimeUtc: deliveryStop.appointment.appointmentEndDateTimeUtc
-      }
-    };
+  transformGetLoadDetail(value: any, options?: OutputTransformerOptions): LoadInterface {
+    switch (options.from) {
+      case 'coyote':
+        return this.coyoteOutputTransformer.getLoadDetail(value as CoyoteLoad);
+      default:
+        return value;
+    }
+  }
 
-    return output;
+  transformBookLoad(value: any, options?: OutputTransformerOptions): any {
+    switch (options.from) {
+      case 'coyote':
+        return this.coyoteOutputTransformer.bookLoad(value);
+      default:
+        return value;
+    }
   }
 }
