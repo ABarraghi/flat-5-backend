@@ -1,4 +1,8 @@
-import { CoyoteGeoCoordinates } from '@module/transform-layer/interface/coyote/coyote-response.interface';
+// eslint-disable-next-line max-len
+import {
+  CoyoteGeoCoordinates,
+  CoyoteLoad
+} from '@module/transform-layer/interface/coyote/coyote-response.interface';
 
 export type CoyoteUnits = 'Miles' | 'Kilometers';
 export type CoyoteEquipmentTypes =
@@ -91,4 +95,19 @@ export class CoyoteInput {
   destination?: CoyoteStopLocationInfo;
   equipmentType: CoyoteEquipmentTypes;
   mode: CoyoteMode;
+}
+
+export class CoyoteBookLoadSimpleInput {
+  carrierId: number;
+  loadId: number;
+}
+
+export class CoyoteBookLoadInput {
+  carrierId: number;
+  load: CoyoteLoad;
+
+  constructor(data: { carrierId: number; load: CoyoteLoad }) {
+    this.carrierId = data.carrierId;
+    this.load = data.load;
+  }
 }

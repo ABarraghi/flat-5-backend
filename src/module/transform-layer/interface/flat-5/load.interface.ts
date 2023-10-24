@@ -20,3 +20,15 @@ export class LoadInterface {
   pickupStop: Stop;
   deliveryStop: Stop;
 }
+
+export class BookingLoad {
+  constructor(props: { loadId?: string; bookingId: string; carrierId?: string }) {
+    this.loadId = props.loadId;
+    this.bookingId = props.bookingId;
+    this.carrierId = props.carrierId;
+  }
+
+  bookingId: string;
+  loadId: string;
+  carrierId: string;
+}

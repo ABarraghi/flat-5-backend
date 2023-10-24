@@ -108,12 +108,14 @@ export type CoyoteLoad = {
   stops: CoyoteStop[];
 };
 
-export type CoyoteSearchLoadResponse = {
-  loads: CoyoteLoad[];
-};
-
 export type CoyoteAuthenticationResponse = {
   access_token: string;
   token_type: string;
   expires_in: number;
 };
+
+export type CoyoteSearchLoadResponse = {
+  loads: CoyoteLoad[];
+};
+
+export type CoyoteLoadDetailResponse = CoyoteLoad;
