@@ -5,11 +5,11 @@ import { Type } from 'class-transformer';
 export class CoordinateDto {
   @IsLatitude()
   @IsOptional()
-  lat: number;
+  latitude: number;
 
   @IsLongitude()
   @IsOptional()
-  lng: number;
+  longitude: number;
 }
 
 export class SearchAvailableLoadDto extends BaseSearchDto {

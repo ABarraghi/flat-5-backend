@@ -8,8 +8,8 @@ export class CoyoteInputTransformer {
     const input = new CoyoteInput();
     input.origin = {
       location: {
-        latitude: value.from.lat,
-        longitude: value.from.lng
+        latitude: value.from.latitude,
+        longitude: value.from.longitude
       }
       // deadheadRadius: {
       //   value: 120,
@@ -23,8 +23,8 @@ export class CoyoteInputTransformer {
     if (value.to) {
       input.destination = {
         location: {
-          latitude: value.to.lat,
-          longitude: value.to.lng
+          latitude: value.to.latitude,
+          longitude: value.to.longitude
         }
         // deadheadRadius: {
         //   value: 120,
