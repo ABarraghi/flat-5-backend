@@ -17,6 +17,7 @@ import { BookLoadDto } from '@module/load/validation/book-load.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Booking } from '@module/load/schema/booking.schema';
 import { Model } from 'mongoose';
+import { Loc } from '@core/util/loc';
 
 @Injectable()
 export class LoadService {
@@ -31,16 +32,16 @@ export class LoadService {
   async searchAvailableLoads(
     searchAvailableLoadDto: SearchAvailableLoadDto
   ): Promise<LoadInterface[]> {
+    const distance = Loc.distance(searchAvailableLoadDto.from, searchAvailableLoadDto.to);
+    searchAvailableLoadDto.distance = distance;
+    searchAvailableLoadDto.unit = 'Kilometers';
     const loads: LoadInterface[] = [];
     if (this.configService.get('broker.coyote.enabled')) {
-      const input = this.inputTransformer.transformSearchAvailableLoad(
-        searchAvailableLoadDto,
-        {
-          to: 'coyote'
-        }
-      ) as CoyoteInput;
-      const coyoteLoads =
-        await this.coyoteBrokerService.searchAvailableLoads(input);
+      const input = this.inputTransformer.transformSearchAvailableLoad(searchAvailableLoadDto, {
+        to: 'coyote'
+      }) as CoyoteInput;
+      const coyoteLoads = await this.coyoteBrokerService.searchAvailableLoads(input);
+
       loads.push(
         ...this.outputTransformer.transformSearchAvailableLoads(coyoteLoads, {
           from: 'coyote'
@@ -48,13 +49,37 @@ export class LoadService {
       );
     }
 
+    let filterLoads = loads.filter(load => {
+      const distance1 = Loc.distance(load.pickupStop.coordinates, searchAvailableLoadDto.from);
+      const distance2 = Loc.distance(load.pickupStop.coordinates, searchAvailableLoadDto.to);
+      const distance3 = Loc.distance(load.deliveryStop.coordinates, searchAvailableLoadDto.from);
+      const distance4 = Loc.distance(load.deliveryStop.coordinates, searchAvailableLoadDto.to);
+
+      return (
+        distance1 <= distance &&
+        distance2 <= distance &&
+        distance3 <= distance &&
+        distance4 <= distance
+      );
+    });
+
+    if (!filterLoads.length) {
+      filterLoads = loads.filter(load => {
+        const distance1 = Loc.distance(load.pickupStop.coordinates, searchAvailableLoadDto.from);
+        const distance2 = Loc.distance(load.pickupStop.coordinates, searchAvailableLoadDto.to);
+
+        return distance1 <= distance && distance2 <= distance;
+      });
+    }
+
+    if (filterLoads.length) {
+      return filterLoads;
+    }
+
     return loads;
   }
 
-  async getLoadDetail(
-    broker: ApiBrokers,
-    loadId: string
-  ): Promise<LoadInterface> {
+  async getLoadDetail(broker: ApiBrokers, loadId: string): Promise<LoadInterface> {
     switch (broker) {
       case 'coyote':
         if (this.configService.get('broker.coyote.enabled')) {
@@ -62,15 +87,11 @@ export class LoadService {
             to: 'coyote'
           }) as number;
 
-          const coyoteLoadDetail =
-            await this.coyoteBrokerService.getLoadDetail(input);
+          const coyoteLoadDetail = await this.coyoteBrokerService.getLoadDetail(input);
 
-          return this.outputTransformer.transformGetLoadDetail(
-            coyoteLoadDetail,
-            {
-              from: 'coyote'
-            }
-          );
+          return this.outputTransformer.transformGetLoadDetail(coyoteLoadDetail, {
+            from: 'coyote'
+          });
         }
         break;
       default:
@@ -82,21 +103,15 @@ export class LoadService {
     switch (bookLoadDto.broker) {
       case 'coyote':
         if (this.configService.get('broker.coyote.enabled')) {
-          const input = this.inputTransformer.transformBookLoad(
-            bookLoadDto.loadId,
-            {
-              to: 'coyote'
-            }
-          ) as CoyoteBookLoadSimpleInput;
+          const input = this.inputTransformer.transformBookLoad(bookLoadDto.loadId, {
+            to: 'coyote'
+          }) as CoyoteBookLoadSimpleInput;
 
           const bookingLoadId = await this.coyoteBrokerService.bookLoad(input);
 
-          const bookingLoad = this.outputTransformer.transformBookLoad(
-            bookingLoadId,
-            {
-              from: 'coyote'
-            }
-          ) as BookingLoad;
+          const bookingLoad = this.outputTransformer.transformBookLoad(bookingLoadId, {
+            from: 'coyote'
+          }) as BookingLoad;
           bookingLoad.loadId = input.loadId.toString();
           bookingLoad.carrierId = input.carrierId.toString();
           bookingLoad.broker = bookLoadDto.broker;

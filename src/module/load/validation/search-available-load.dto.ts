@@ -1,5 +1,5 @@
 import { BaseSearchDto } from '@core/util/validation/base-search-dto';
-import { IsLatitude, IsLongitude, IsOptional, ValidateNested } from 'class-validator';
+import { IsLatitude, IsLongitude, IsNumber, IsOptional, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CoordinateDto {
@@ -21,4 +21,11 @@ export class SearchAvailableLoadDto extends BaseSearchDto {
   @ValidateNested()
   @Type(() => CoordinateDto)
   to: CoordinateDto;
+
+  @IsOptional()
+  @IsNumber()
+  distance: number;
+
+  @IsOptional()
+  unit = 'Kilometers';
 }
