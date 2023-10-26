@@ -12,37 +12,45 @@ import {
 export class CoyoteOutputTransformer {
   searchAvailableLoads(value: CoyoteSearchLoadResponse): LoadInterface[] {
     const loads: LoadInterface[] = [];
-    value.loads.forEach(load => {
-      const loadModel = new LoadInterface();
-      loadModel.broker = 'coyote';
-      loadModel.loadId = load.loadId.toString();
-      const pickupStop = load.stops.find(stop => stop.stopType === 'Pickup');
-      loadModel.pickupStop = {
-        address: pickupStop.facility.address,
-        coordinates: {
-          latitude: pickupStop.facility.geoCoordinates.latitude,
-          longitude: pickupStop.facility.geoCoordinates.longitude
-        },
-        appointment: {
-          appointmentStartDateTimeUtc: pickupStop.appointment.appointmentStartDateTimeUtc,
-          appointmentEndDateTimeUtc: pickupStop.appointment.appointmentEndDateTimeUtc
-        }
-      };
-      const deliveryStop = load.stops.find(stop => stop.stopType === 'Delivery');
-      loadModel.deliveryStop = {
-        address: deliveryStop.facility.address,
-        coordinates: {
-          latitude: deliveryStop.facility.geoCoordinates.latitude,
-          longitude: deliveryStop.facility.geoCoordinates.longitude
-        },
-        appointment: {
-          appointmentStartDateTimeUtc: deliveryStop.appointment.appointmentStartDateTimeUtc,
-          appointmentEndDateTimeUtc: deliveryStop.appointment.appointmentEndDateTimeUtc
-        }
-      };
+    if (value.loads.length) {
+      value.loads.forEach(load => {
+        const loadModel = new LoadInterface();
+        loadModel.broker = 'coyote';
+        loadModel.loadId = load.loadId.toString();
+        const pickupStop = load.stops.find(stop => stop.stopType === 'Pickup');
+        loadModel.pickupStop = {
+          address: pickupStop.facility.address,
+          coordinates: {
+            latitude: pickupStop.facility.geoCoordinates.latitude,
+            longitude: pickupStop.facility.geoCoordinates.longitude
+          },
+          appointment: {
+            appointmentStartDateTimeUtc:
+              pickupStop.appointment.appointmentStartDateTimeUtc,
+            appointmentEndDateTimeUtc:
+              pickupStop.appointment.appointmentEndDateTimeUtc
+          }
+        };
+        const deliveryStop = load.stops.find(
+          stop => stop.stopType === 'Delivery'
+        );
+        loadModel.deliveryStop = {
+          address: deliveryStop.facility.address,
+          coordinates: {
+            latitude: deliveryStop.facility.geoCoordinates.latitude,
+            longitude: deliveryStop.facility.geoCoordinates.longitude
+          },
+          appointment: {
+            appointmentStartDateTimeUtc:
+              deliveryStop.appointment.appointmentStartDateTimeUtc,
+            appointmentEndDateTimeUtc:
+              deliveryStop.appointment.appointmentEndDateTimeUtc
+          }
+        };
 
-      loads.push(loadModel);
-    });
+        loads.push(loadModel);
+      });
+    }
 
     return loads;
   }
@@ -59,8 +67,10 @@ export class CoyoteOutputTransformer {
         longitude: pickupStop.facility.geoCoordinates.longitude
       },
       appointment: {
-        appointmentStartDateTimeUtc: pickupStop.appointment.appointmentStartDateTimeUtc,
-        appointmentEndDateTimeUtc: pickupStop.appointment.appointmentEndDateTimeUtc
+        appointmentStartDateTimeUtc:
+          pickupStop.appointment.appointmentStartDateTimeUtc,
+        appointmentEndDateTimeUtc:
+          pickupStop.appointment.appointmentEndDateTimeUtc
       }
     };
     const deliveryStop = value.stops.find(stop => stop.stopType === 'Delivery');
@@ -71,8 +81,10 @@ export class CoyoteOutputTransformer {
         longitude: deliveryStop.facility.geoCoordinates.longitude
       },
       appointment: {
-        appointmentStartDateTimeUtc: deliveryStop.appointment.appointmentStartDateTimeUtc,
-        appointmentEndDateTimeUtc: deliveryStop.appointment.appointmentEndDateTimeUtc
+        appointmentStartDateTimeUtc:
+          deliveryStop.appointment.appointmentStartDateTimeUtc,
+        appointmentEndDateTimeUtc:
+          deliveryStop.appointment.appointmentEndDateTimeUtc
       }
     };
 

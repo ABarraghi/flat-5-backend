@@ -10,11 +10,11 @@ export class CoyoteInputTransformer {
       location: {
         latitude: value.from.latitude,
         longitude: value.from.longitude
+      },
+      deadheadRadius: {
+        value: Math.round(value.distance),
+        unit: 'Kilometers'
       }
-      // deadheadRadius: {
-      //   value: 120,
-      //   unit: 'Miles'
-      // },
       // appointment: {
       //   appointmentStartDateTime: '2023-10-16T14:00:00-05:00',
       //   appointmentEndDateTime: '2023-10-17T12:00:00-05:00'
@@ -25,11 +25,11 @@ export class CoyoteInputTransformer {
         location: {
           latitude: value.to.latitude,
           longitude: value.to.longitude
+        },
+        deadheadRadius: {
+          value: Math.round(value.distance),
+          unit: 'Kilometers'
         }
-        // deadheadRadius: {
-        //   value: 120,
-        //   unit: 'Miles'
-        // },
         // appointment: {
         //   appointmentStartDateTime: '2023-10-16T14:00:00-05:00',
         //   appointmentEndDateTime: '2023-10-17T12:00:00-05:00'
