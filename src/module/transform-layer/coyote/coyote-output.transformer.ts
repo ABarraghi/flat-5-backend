@@ -12,6 +12,7 @@ import {
 export class CoyoteOutputTransformer {
   searchAvailableLoads(value: CoyoteSearchLoadResponse): LoadInterface[] {
     const loads: LoadInterface[] = [];
+    if (!value || !value.loads) return loads;
     if (value.loads.length) {
       value.loads.forEach(load => {
         const loadModel = new LoadInterface();
