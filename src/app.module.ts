@@ -10,6 +10,7 @@ import { validationOptions } from '@config/validation';
 import { AllExceptionsFilter } from '@core/filter/all-exception.filter';
 import { LoggingModule } from '@core/logger/logging.module';
 import { LoadModule } from '@module/load/load.module';
+import { MongooseModule } from '@nestjs/mongoose';
 
 @Module({
   imports: [
@@ -20,6 +21,9 @@ import { LoadModule } from '@module/load/load.module';
     }),
     LoggingModule,
     ExceptionModule,
+    MongooseModule.forRoot(
+      'mongodb+srv://flat-local:hgvxvCjQQFJz3PSi@cluster-for-local.bdpwm99.mongodb.net/flat-5'
+    ),
     LoadModule
   ],
   controllers: [AppController],

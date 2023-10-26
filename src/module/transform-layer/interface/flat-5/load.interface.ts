@@ -22,13 +22,20 @@ export class LoadInterface {
 }
 
 export class BookingLoad {
-  constructor(props: { loadId?: string; bookingId: string; carrierId?: string }) {
+  constructor(props: {
+    loadId?: string;
+    bookingId: string;
+    carrierId?: string;
+    broker?: string;
+  }) {
     this.loadId = props.loadId;
     this.bookingId = props.bookingId;
     this.carrierId = props.carrierId;
+    this.broker = props.broker;
   }
 
   bookingId: string;
   loadId: string;
   carrierId: string;
+  broker: string;
 }

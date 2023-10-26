@@ -5,9 +5,15 @@ import { ErrorCodeService } from '@core/exception/error-code.service';
 import { errorCodes } from '@module/load/const/error-code';
 import { BrokerModule } from '@module/broker/broker.module';
 import { TransformerModule } from '@module/transform-layer/transformer.module';
+import { MongooseModule } from '@nestjs/mongoose';
+import { Booking, BookingSchema } from '@module/load/schema/booking.schema';
 
 @Module({
-  imports: [BrokerModule, TransformerModule],
+  imports: [
+    BrokerModule,
+    TransformerModule,
+    MongooseModule.forFeature([{ name: Booking.name, schema: BookingSchema }])
+  ],
   controllers: [LoadController],
   providers: [LoadService]
 })
