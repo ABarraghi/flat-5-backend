@@ -48,7 +48,7 @@ export class CoyoteBrokerService {
         )
         .pipe(
           catchError(e => {
-            Logging.error('Coyote Authorization got error', e);
+            Logging.error('[Coyote Service] Authorization got error', e);
             throw new BadRequestException('CYT001');
           })
         );
@@ -74,7 +74,7 @@ export class CoyoteBrokerService {
       })
       .pipe(
         catchError(e => {
-          Logging.error('[Coyote] Search Available Loads got error', e);
+          Logging.error('[Coyote Service] Search Available Loads got error', e);
           throw new BadRequestException('CYT002');
         })
       );
@@ -93,7 +93,7 @@ export class CoyoteBrokerService {
       })
       .pipe(
         catchError(e => {
-          Logging.error('[Coyote] Get Load Detail got error', e);
+          Logging.error('[Coyote Service] Get Load Detail got error', e);
           throw new BadRequestException('CYT003');
         })
       );
@@ -117,7 +117,7 @@ export class CoyoteBrokerService {
       })
       .pipe(
         catchError(e => {
-          Logging.error('[Coyote] Book Load got error', e);
+          Logging.error('[Coyote Service] Book Load got error', e);
           throw new BadRequestException('CYT004');
         })
       );

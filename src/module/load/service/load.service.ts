@@ -18,12 +18,14 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Booking } from '@module/load/schema/booking.schema';
 import { Model } from 'mongoose';
 import { Loc } from '@core/util/loc';
+import { DatBrokerService } from '@module/broker/service/dat-broker.service';
 
 @Injectable()
 export class LoadService {
   constructor(
     private configService: ConfigService,
     private coyoteBrokerService: CoyoteBrokerService,
+    private datBrokerService: DatBrokerService,
     private inputTransformer: InputTransformer,
     private outputTransformer: OutputTransformer,
     @InjectModel(Booking.name) private bookingModel: Model<Booking>
@@ -125,5 +127,11 @@ export class LoadService {
       default:
         return;
     }
+  }
+
+  async test(input?: any): Promise<any> {
+    const res = await this.datBrokerService.createAssetQuery(input);
+
+    return res;
   }
 }

@@ -26,4 +26,11 @@ export class LoadController {
   bookLoad(@Body() bookLoadDto: BookLoadDto) {
     return this.loadService.bookLoad(bookLoadDto);
   }
+
+  @Post('test')
+  test(@Body() body: any) {
+    // console.log(body);
+
+    return this.loadService.test(body);
+  }
 }
