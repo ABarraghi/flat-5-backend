@@ -3,6 +3,8 @@ import { Injectable } from '@nestjs/common';
 import { CoyoteInputTransformer } from '@module/transform-layer/coyote/coyote-input.transformer';
 import { SearchAvailableLoadDto } from '@module/load/validation/search-available-load.dto';
 import { CoyoteInput } from '@module/transform-layer/interface/coyote/coyote-input.interface';
+import { TruckStopInput } from '@module/transform-layer/interface/truck-stop/truckt-stop-input.interface';
+import { TruckStopInputTransformer } from '@module/transform-layer/truck-stop/truck-stop.transformer';
 
 export interface InputTransformerOptions {
   to: ApiBrokers;
@@ -12,7 +14,10 @@ export interface InputTransformerOptions {
 
 @Injectable()
 export class InputTransformer {
-  constructor(private coyoteInputTransformer: CoyoteInputTransformer) {}
+  constructor(
+    private coyoteInputTransformer: CoyoteInputTransformer,
+    private truckStopInputTransformer: TruckStopInputTransformer
+  ) {}
 
   // Function overloading
   // transformSearchAvailableLoad(
@@ -22,10 +27,12 @@ export class InputTransformer {
   transformSearchAvailableLoad(
     value: SearchAvailableLoadDto,
     options?: InputTransformerOptions
-  ): SearchAvailableLoadDto | CoyoteInput {
+  ): SearchAvailableLoadDto | CoyoteInput | TruckStopInput {
     switch (options.to) {
       case 'coyote':
         return this.coyoteInputTransformer.searchAvailableLoads(value);
+      case 'truck_stop':
+        return this.truckStopInputTransformer.searchAvailableLoads(value);
       default:
         return value;
     }

@@ -118,4 +118,8 @@ export type CoyoteSearchLoadResponse = {
   loads: CoyoteLoad[];
 };
 
+export type TruckStopSearchLoadResponse = {
+  loads: CoyoteLoad[];
+};
+
 export type CoyoteLoadDetailResponse = CoyoteLoad;

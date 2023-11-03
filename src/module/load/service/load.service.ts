@@ -18,12 +18,20 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Booking } from '@module/load/schema/booking.schema';
 import { Model } from 'mongoose';
 import { Loc } from '@core/util/loc';
+import { TruckStopBrokerService } from '@module/broker/service/truck-stop-broker.service';
+import {
+  LoadType,
+  LocationInfo,
+  TruckStopEquipmentTypes,
+  TruckStopInput
+} from '@module/transform-layer/interface/truck-stop/truckt-stop-input.interface';
 
 @Injectable()
 export class LoadService {
   constructor(
     private configService: ConfigService,
     private coyoteBrokerService: CoyoteBrokerService,
+    private truckStopBrokerService: TruckStopBrokerService,
     private inputTransformer: InputTransformer,
     private outputTransformer: OutputTransformer,
     @InjectModel(Booking.name) private bookingModel: Model<Booking>
@@ -36,17 +44,33 @@ export class LoadService {
     searchAvailableLoadDto.distance = distance;
     searchAvailableLoadDto.unit = 'Kilometers';
     const loads: LoadInterface[] = [];
-    if (this.configService.get('broker.coyote.enabled')) {
-      const input = this.inputTransformer.transformSearchAvailableLoad(searchAvailableLoadDto, {
-        to: 'coyote'
-      }) as CoyoteInput;
-      const coyoteLoads = await this.coyoteBrokerService.searchAvailableLoads(input);
+    // if (this.configService.get('broker.coyote.enabled')) {
+    //   const input = this.inputTransformer.transformSearchAvailableLoad(searchAvailableLoadDto, {
+    //     to: 'coyote'
+    //   }) as CoyoteInput;
+    //   const coyoteLoads = await this.coyoteBrokerService.searchAvailableLoads(input);
+    //
+    //   loads.push(
+    //     ...this.outputTransformer.transformSearchAvailableLoads(coyoteLoads, {
+    //       from: 'coyote'
+    //     })
+    //   );
+    // }
 
-      loads.push(
-        ...this.outputTransformer.transformSearchAvailableLoads(coyoteLoads, {
-          from: 'coyote'
-        })
-      );
+    if (this.configService.get('broker.truck_stop.enabled')) {
+      const input = this.inputTransformer.transformSearchAvailableLoad(searchAvailableLoadDto, {
+        to: 'truck_stop'
+      }) as TruckStopInput;
+      console.log('truck_stop input: ', input);
+      const truckStopLoads = await this.truckStopBrokerService.searchAvailableLoads(input);
+      // console.log('truckStopLoads: ', truckStopLoads);
+
+      return truckStopLoads;
+      // loads.push(
+      //   ...this.outputTransformer.transformSearchAvailableLoads(truckStopLoads, {
+      //     from: 'truck_stop'
+      //   })
+      // );
     }
 
     let filterLoads = loads.filter(load => {

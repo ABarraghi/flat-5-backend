@@ -10,6 +10,18 @@ export class CoordinateDto {
   @IsLongitude()
   @IsOptional()
   longitude: number;
+
+  @IsOptional()
+  city: string;
+
+  @IsOptional()
+  state: string;
+
+  @IsOptional()
+  country: string;
+
+  @IsOptional()
+  range: number;
 }
 
 export class SearchAvailableLoadDto extends BaseSearchDto {
@@ -28,4 +40,7 @@ export class SearchAvailableLoadDto extends BaseSearchDto {
 
   @IsOptional()
   unit = 'Kilometers';
+
+  @IsOptional()
+  equipmentType: string;
 }

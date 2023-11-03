@@ -1,5 +1,5 @@
-export type ApiBrokers = 'coyote';
+export type ApiBrokers = 'coyote' | 'truck_stop';
 
 export function isApiBroker(input: string): input is ApiBrokers {
-  return input === 'coyote';
+  return ['coyote', 'truck_stop'].includes(input);
 }
