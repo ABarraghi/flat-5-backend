@@ -23,27 +23,31 @@ export class TruckStopInputTransformer {
       longitude: value.to.longitude || 0
     };
     input.equipmentType = 'VR';
-    input.loadType = 'Full';
+    input.loadType = 'All';
+    if (value.pickupDate) {
+      input.pickupDate = value.pickupDate;
+    }
+
     // const date = new Date();
     // input.pickupDate = ;
 
     // Mock Data
-    // const input = {
+    // input = {
     //   origin: {
-    //     city: 'Boise',
-    //     country: 'USA',
+    //     // city: 'Boise',
+    //     country: 'US',
     //     range: 2000,
-    //     state: 'ID'
+    //     state: 'IL'
     //   },
     //   destination: {
-    //     city: 'WACO',
-    //     country: 'USA',
+    //     // city: 'WACO',
+    //     country: 'US',
     //     range: 2000,
-    //     state: 'TX'
+    //     state: 'PA'
     //   },
     //   equipmentType: 'VR',
-    //   loadType: 'All'
-    //   // pickupDate: '2022-12-03' // YYYY-MM-DD
+    //   loadType: 'All',
+    //   pickupDate: '2023-11-06' // YYYY-MM-DD
     // } as TruckStopInput;
 
     return input;

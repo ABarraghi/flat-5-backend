@@ -62,9 +62,9 @@ export class LoadService {
         to: 'truck_stop'
       }) as TruckStopInput;
       console.log('truck_stop input: ', input);
-      const truckStopLoads = await this.truckStopBrokerService.searchAvailableLoads(input);
-      // console.log('truckStopLoads: ', truckStopLoads);
-
+      // const truckStopLoads = await this.truckStopBrokerService.searchAvailableLoads(input);
+      const truckStopLoads = await this.truckStopBrokerService.searchMultipleDetailsLoads(input);
+      // eslint-disable-next-line newline-before-return
       return truckStopLoads;
       // loads.push(
       //   ...this.outputTransformer.transformSearchAvailableLoads(truckStopLoads, {

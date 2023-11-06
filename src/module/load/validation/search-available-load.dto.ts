@@ -43,4 +43,7 @@ export class SearchAvailableLoadDto extends BaseSearchDto {
 
   @IsOptional()
   equipmentType: string;
+
+  @IsOptional()
+  pickupDate: string;
 }

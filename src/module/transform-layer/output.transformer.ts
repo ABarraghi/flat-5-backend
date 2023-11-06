@@ -19,6 +19,8 @@ export class OutputTransformer {
     switch (options.from) {
       case 'coyote':
         return this.coyoteOutputTransformer.searchAvailableLoads(value as CoyoteSearchLoadResponse);
+      case 'truck_stop':
+        return this.coyoteOutputTransformer.searchAvailableLoads(value as CoyoteSearchLoadResponse);
       default:
         return value;
     }

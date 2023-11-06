@@ -26,15 +26,11 @@ export class CoyoteOutputTransformer {
             longitude: pickupStop.facility.geoCoordinates.longitude
           },
           appointment: {
-            appointmentStartDateTimeUtc:
-              pickupStop.appointment.appointmentStartDateTimeUtc,
-            appointmentEndDateTimeUtc:
-              pickupStop.appointment.appointmentEndDateTimeUtc
+            appointmentStartDateTimeUtc: pickupStop.appointment.appointmentStartDateTimeUtc,
+            appointmentEndDateTimeUtc: pickupStop.appointment.appointmentEndDateTimeUtc
           }
         };
-        const deliveryStop = load.stops.find(
-          stop => stop.stopType === 'Delivery'
-        );
+        const deliveryStop = load.stops.find(stop => stop.stopType === 'Delivery');
         loadModel.deliveryStop = {
           address: deliveryStop.facility.address,
           coordinates: {
@@ -42,10 +38,8 @@ export class CoyoteOutputTransformer {
             longitude: deliveryStop.facility.geoCoordinates.longitude
           },
           appointment: {
-            appointmentStartDateTimeUtc:
-              deliveryStop.appointment.appointmentStartDateTimeUtc,
-            appointmentEndDateTimeUtc:
-              deliveryStop.appointment.appointmentEndDateTimeUtc
+            appointmentStartDateTimeUtc: deliveryStop.appointment.appointmentStartDateTimeUtc,
+            appointmentEndDateTimeUtc: deliveryStop.appointment.appointmentEndDateTimeUtc
           }
         };
 
@@ -68,10 +62,8 @@ export class CoyoteOutputTransformer {
         longitude: pickupStop.facility.geoCoordinates.longitude
       },
       appointment: {
-        appointmentStartDateTimeUtc:
-          pickupStop.appointment.appointmentStartDateTimeUtc,
-        appointmentEndDateTimeUtc:
-          pickupStop.appointment.appointmentEndDateTimeUtc
+        appointmentStartDateTimeUtc: pickupStop.appointment.appointmentStartDateTimeUtc,
+        appointmentEndDateTimeUtc: pickupStop.appointment.appointmentEndDateTimeUtc
       }
     };
     const deliveryStop = value.stops.find(stop => stop.stopType === 'Delivery');
@@ -82,10 +74,8 @@ export class CoyoteOutputTransformer {
         longitude: deliveryStop.facility.geoCoordinates.longitude
       },
       appointment: {
-        appointmentStartDateTimeUtc:
-          deliveryStop.appointment.appointmentStartDateTimeUtc,
-        appointmentEndDateTimeUtc:
-          deliveryStop.appointment.appointmentEndDateTimeUtc
+        appointmentStartDateTimeUtc: deliveryStop.appointment.appointmentStartDateTimeUtc,
+        appointmentEndDateTimeUtc: deliveryStop.appointment.appointmentEndDateTimeUtc
       }
     };
 
