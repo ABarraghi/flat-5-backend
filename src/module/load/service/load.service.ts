@@ -17,7 +17,6 @@ import { BookLoadDto } from '@module/load/validation/book-load.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Booking } from '@module/load/schema/booking.schema';
 import { Model } from 'mongoose';
-import { Loc } from '@core/util/loc';
 import { DatBrokerService } from '@module/broker/service/dat-broker.service';
 
 @Injectable()
@@ -34,9 +33,10 @@ export class LoadService {
   async searchAvailableLoads(
     searchAvailableLoadDto: SearchAvailableLoadDto
   ): Promise<LoadInterface[]> {
-    const distance = Loc.distance(searchAvailableLoadDto.from, searchAvailableLoadDto.to);
-    searchAvailableLoadDto.distance = distance;
-    searchAvailableLoadDto.unit = 'Kilometers';
+    if (searchAvailableLoadDto.stopPoints.length > 2) {
+      searchAvailableLoadDto.stopPoints = searchAvailableLoadDto.stopPoints.slice(0, 2);
+      // just handle only 2 stop points for now
+    }
     const loads: LoadInterface[] = [];
     if (this.configService.get('broker.coyote.enabled')) {
       const input = this.inputTransformer.transformSearchAvailableLoad(searchAvailableLoadDto, {
@@ -49,33 +49,6 @@ export class LoadService {
           from: 'coyote'
         })
       );
-    }
-
-    let filterLoads = loads.filter(load => {
-      const distance1 = Loc.distance(load.pickupStop.coordinates, searchAvailableLoadDto.from);
-      const distance2 = Loc.distance(load.pickupStop.coordinates, searchAvailableLoadDto.to);
-      const distance3 = Loc.distance(load.deliveryStop.coordinates, searchAvailableLoadDto.from);
-      const distance4 = Loc.distance(load.deliveryStop.coordinates, searchAvailableLoadDto.to);
-
-      return (
-        distance1 <= distance &&
-        distance2 <= distance &&
-        distance3 <= distance &&
-        distance4 <= distance
-      );
-    });
-
-    if (!filterLoads.length) {
-      filterLoads = loads.filter(load => {
-        const distance1 = Loc.distance(load.pickupStop.coordinates, searchAvailableLoadDto.from);
-        const distance2 = Loc.distance(load.pickupStop.coordinates, searchAvailableLoadDto.to);
-
-        return distance1 <= distance && distance2 <= distance;
-      });
-    }
-
-    if (filterLoads.length) {
-      return filterLoads;
     }
 
     return loads;
@@ -130,7 +103,10 @@ export class LoadService {
   }
 
   async test(input?: any): Promise<any> {
-    const res = await this.datBrokerService.createAssetQuery(input);
+    const assetQuery = await this.datBrokerService.createAssetQuery(input);
+    console.log(assetQuery);
+    const res = await this.datBrokerService.retrieveAssetQueryResults(assetQuery.queryId);
+    console.log(res);
 
     return res;
   }
