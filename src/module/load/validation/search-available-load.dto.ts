@@ -8,6 +8,7 @@ import {
   IsISO8601,
   IsLatitude,
   IsLongitude,
+  IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
@@ -21,6 +22,32 @@ export class CoordinateDto {
 
   @IsLongitude()
   longitude: number;
+}
+
+export class LocationDto {
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => CoordinateDto)
+  coordinate: CoordinateDto;
+
+  @IsOptional()
+  @IsNotEmpty()
+  @IsString()
+  city: string;
+
+  @IsOptional()
+  @IsNotEmpty()
+  @IsString()
+  state: string;
+
+  @IsOptional()
+  @IsNotEmpty()
+  @IsString()
+  country: string;
+
+  @IsOptional()
+  @IsNotEmpty()
+  postalCode: string;
 }
 
 export class StopDate {
@@ -37,8 +64,8 @@ export class StopDate {
 
 export class StopPointDto {
   @ValidateNested()
-  @Type(() => CoordinateDto)
-  location: CoordinateDto;
+  @Type(() => LocationDto)
+  location: LocationDto;
 
   @ValidateNested()
   @Type(() => StopDate)
@@ -50,7 +77,7 @@ export class StopPointDto {
   radius: number;
 
   @IsOptional()
-  unit: 'Miles' | 'Kilometers' = 'Kilometers';
+  unit: 'Miles' | 'Kilometers' = 'Miles';
 }
 
 export class SearchAvailableLoadDto extends BaseSearchDto {

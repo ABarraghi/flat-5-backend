@@ -2,22 +2,17 @@ import { Injectable } from '@nestjs/common';
 import { SearchAvailableLoadDto } from '@module/load/validation/search-available-load.dto';
 import { ConfigService } from '@nestjs/config';
 import { CoyoteBrokerService } from '@module/broker/service/coyote-broker.service';
-import { InputTransformer } from '@module/transform-layer/input.transformer';
-import {
-  BookingLoad,
-  LoadInterface
-} from '@module/transform-layer/interface/flat-5/load.interface';
-import { OutputTransformer } from '@module/transform-layer/output.transformer';
+import { LoadInterface } from '@module/transform-layer/interface/flat-5/load.interface';
 import { ApiBrokers } from '@module/transform-layer/interface/flat-5/common.interface';
-import {
-  CoyoteBookLoadSimpleInput,
-  CoyoteInput
-} from '@module/transform-layer/interface/coyote/coyote-input.interface';
 import { BookLoadDto } from '@module/load/validation/book-load.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Booking } from '@module/load/schema/booking.schema';
 import { Model } from 'mongoose';
 import { DatBrokerService } from '@module/broker/service/dat-broker.service';
+import { CoyoteInputTransformer } from '@module/transform-layer/coyote/coyote-input.transformer';
+import { CoyoteOutputTransformer } from '@module/transform-layer/coyote/coyote-output.transformer';
+import { DatInputTransformer } from '@module/transform-layer/dat/dat-input.transformer';
+import { DatOutputTransformer } from '@module/transform-layer/dat/dat-output.transformer';
 
 @Injectable()
 export class LoadService {
@@ -25,30 +20,33 @@ export class LoadService {
     private configService: ConfigService,
     private coyoteBrokerService: CoyoteBrokerService,
     private datBrokerService: DatBrokerService,
-    private inputTransformer: InputTransformer,
-    private outputTransformer: OutputTransformer,
+    private coyoteInputTransformer: CoyoteInputTransformer,
+    private coyoteOutputTransformer: CoyoteOutputTransformer,
+    private datInputTransformer: DatInputTransformer,
+    private datOutputTransformer: DatOutputTransformer,
     @InjectModel(Booking.name) private bookingModel: Model<Booking>
   ) {}
 
   async searchAvailableLoads(
     searchAvailableLoadDto: SearchAvailableLoadDto
-  ): Promise<LoadInterface[]> {
+  ): Promise<LoadInterface[] | any> {
     if (searchAvailableLoadDto.stopPoints.length > 2) {
       searchAvailableLoadDto.stopPoints = searchAvailableLoadDto.stopPoints.slice(0, 2);
       // just handle only 2 stop points for now
     }
     const loads: LoadInterface[] = [];
     if (this.configService.get('broker.coyote.enabled')) {
-      const input = this.inputTransformer.transformSearchAvailableLoad(searchAvailableLoadDto, {
-        to: 'coyote'
-      }) as CoyoteInput;
+      const input = this.coyoteInputTransformer.searchAvailableLoads(searchAvailableLoadDto);
       const coyoteLoads = await this.coyoteBrokerService.searchAvailableLoads(input);
 
-      loads.push(
-        ...this.outputTransformer.transformSearchAvailableLoads(coyoteLoads, {
-          from: 'coyote'
-        })
-      );
+      loads.push(...this.coyoteOutputTransformer.searchAvailableLoads(coyoteLoads));
+    }
+    if (this.configService.get('broker.dat.enabled')) {
+      const input = this.datInputTransformer.createAssetQuery(searchAvailableLoadDto);
+      const assetQuery = await this.datBrokerService.createAssetQuery(input);
+      const datMatches = await this.datBrokerService.retrieveAssetQueryResults(assetQuery.queryId);
+
+      loads.push(...this.datOutputTransformer.searchAvailableLoads(datMatches));
     }
 
     return loads;
@@ -58,15 +56,11 @@ export class LoadService {
     switch (broker) {
       case 'coyote':
         if (this.configService.get('broker.coyote.enabled')) {
-          const input = this.inputTransformer.transformGetLoadDetail(loadId, {
-            to: 'coyote'
-          }) as number;
+          const input = this.coyoteInputTransformer.getLoadDetail(loadId);
 
           const coyoteLoadDetail = await this.coyoteBrokerService.getLoadDetail(input);
 
-          return this.outputTransformer.transformGetLoadDetail(coyoteLoadDetail, {
-            from: 'coyote'
-          });
+          return this.coyoteOutputTransformer.getLoadDetail(coyoteLoadDetail);
         }
         break;
       default:
@@ -78,15 +72,11 @@ export class LoadService {
     switch (bookLoadDto.broker) {
       case 'coyote':
         if (this.configService.get('broker.coyote.enabled')) {
-          const input = this.inputTransformer.transformBookLoad(bookLoadDto.loadId, {
-            to: 'coyote'
-          }) as CoyoteBookLoadSimpleInput;
+          const input = this.coyoteInputTransformer.bookLoad(bookLoadDto.loadId);
 
           const bookingLoadId = await this.coyoteBrokerService.bookLoad(input);
 
-          const bookingLoad = this.outputTransformer.transformBookLoad(bookingLoadId, {
-            from: 'coyote'
-          }) as BookingLoad;
+          const bookingLoad = this.coyoteOutputTransformer.bookLoad(bookingLoadId);
           bookingLoad.loadId = input.loadId.toString();
           bookingLoad.carrierId = input.carrierId.toString();
           bookingLoad.broker = bookLoadDto.broker;

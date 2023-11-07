@@ -1,55 +1,84 @@
-import { CoyoteInput } from '@module/transform-layer/interface/coyote/coyote-input.interface';
 import { SearchAvailableLoadDto } from '@module/load/validation/search-available-load.dto';
 import { Injectable } from '@nestjs/common';
+import { DATCreateAssetQueryInput } from '@module/transform-layer/interface/dat/dat-input.interface';
+import {
+  DATQueryCriteria,
+  DATState
+} from '@module/transform-layer/interface/dat/dat-response.interface';
+import { Loc } from '@core/util/loc';
+import * as dayjs from 'dayjs';
 
 @Injectable()
 export class DatInputTransformer {
-  searchAvailableLoads(value: SearchAvailableLoadDto): CoyoteInput {
-    const input = new CoyoteInput();
-    input.origin = {
-      location: {
-        latitude: value.from.latitude,
-        longitude: value.from.longitude
-      },
-      deadheadRadius: {
-        value: Math.round(value.distance),
-        unit: 'Kilometers'
-      }
-      // appointment: {
-      //   appointmentStartDateTime: '2023-10-16T14:00:00-05:00',
-      //   appointmentEndDateTime: '2023-10-17T12:00:00-05:00'
-      // }
-    };
-    if (value.to) {
-      input.destination = {
-        location: {
-          latitude: value.to.latitude,
-          longitude: value.to.longitude
+  createAssetQuery(value: SearchAvailableLoadDto): DATCreateAssetQueryInput {
+    const criteria: DATQueryCriteria = {
+      lane: {
+        assetType: 'TRUCK',
+        equipment: {
+          types: ['FR', 'VR', 'VF'],
+          classes: ['F', 'R', 'V']
         },
-        deadheadRadius: {
-          value: Math.round(value.distance),
-          unit: 'Kilometers'
+        origin: {
+          place: {
+            latitude: value.stopPoints[0].location.coordinate.latitude,
+            longitude: value.stopPoints[0].location.coordinate.longitude,
+            city: value.stopPoints[0].location.city ?? '',
+            stateProv: (value.stopPoints[0].location.state ?? '') as DATState,
+            county: value.stopPoints[0].location.country ?? '',
+            postalCode: value.stopPoints[0].location.postalCode ?? ''
+          }
+        },
+        destination: {
+          open: {}
         }
-        // appointment: {
-        //   appointmentStartDateTime: '2023-10-16T14:00:00-05:00',
-        //   appointmentEndDateTime: '2023-10-17T12:00:00-05:00'
-        // }
-      };
+      },
+      availability: {
+        earliestWhen: dayjs().startOf('day').format(),
+        latestWhen: dayjs().endOf('day').format()
+      },
+      maxOriginDeadheadMiles: 150,
+      maxDestinationDeadheadMiles: 150
+    };
+    if (value.stopPoints[0].radius) {
+      criteria.maxOriginDeadheadMiles =
+        value.stopPoints[0].unit === 'Miles'
+          ? value.stopPoints[0].radius
+          : Loc.kilometersToMiles(value.stopPoints[0].radius);
     }
-    input.equipmentType = 'V';
-    input.mode = 'TL_LTL';
+    if (value.stopPoints[0].stopDate) {
+      // for pickup date only
+      criteria.availability = {
+        earliestWhen: dayjs(value.stopPoints[0].stopDate.from).startOf('day').format(),
+        latestWhen: dayjs(value.stopPoints[0].stopDate.from).endOf('day').format()
+      };
+      if (value.stopPoints[0].stopDate.to) {
+        criteria.availability.latestWhen = dayjs(value.stopPoints[0].stopDate.to)
+          .endOf('day')
+          .format();
+      }
+    }
+    if (value.stopPoints[1]) {
+      criteria.lane.destination = {
+        place: {
+          latitude: value.stopPoints[1].location.coordinate.latitude,
+          longitude: value.stopPoints[1].location.coordinate.longitude,
+          city: value.stopPoints[0].location.city ?? '',
+          stateProv: (value.stopPoints[0].location.state ?? '') as DATState,
+          county: value.stopPoints[0].location.country ?? '',
+          postalCode: value.stopPoints[0].location.postalCode ?? ''
+        }
+      };
+      if (value.stopPoints[1].radius) {
+        criteria.maxDestinationDeadheadMiles =
+          value.stopPoints[1].unit === 'Miles'
+            ? value.stopPoints[1].radius
+            : Loc.kilometersToMiles(value.stopPoints[1].radius);
+      }
+    }
+    const input: DATCreateAssetQueryInput = {
+      criteria
+    };
 
     return input;
-  }
-
-  getLoadDetail(loadId: string): number {
-    return +loadId;
-  }
-
-  bookLoad(loadId: string) {
-    return {
-      loadId: +loadId,
-      carrierId: 194536367
-    };
   }
 }

@@ -7,38 +7,239 @@ export type DATGetUserTokenResponse = {
   accessToken: string;
 };
 
+export type DATEquipmentType =
+  | 'AC'
+  | 'C'
+  | 'CI'
+  | 'CR'
+  | 'DD'
+  | 'LA'
+  | 'DT'
+  | 'F'
+  | 'FA'
+  | 'BT'
+  | 'F2'
+  | 'FZ'
+  | 'FH'
+  | 'MX'
+  | 'FS'
+  | 'FT'
+  | 'FM'
+  | 'FD'
+  | 'FR'
+  | 'HB'
+  | 'LB'
+  | 'MV'
+  | 'NU'
+  | 'PO'
+  | 'R'
+  | 'RA'
+  | 'R2'
+  | 'RZ'
+  | 'RN'
+  | 'RL'
+  | 'RM'
+  | 'RG'
+  | 'SD'
+  | 'ST'
+  | 'TA'
+  | 'TN'
+  | 'TS'
+  | 'TT'
+  | 'V'
+  | 'VA'
+  | 'VS'
+  | 'VC'
+  | 'V2'
+  | 'VZ'
+  | 'VH'
+  | 'VI'
+  | 'VN'
+  | 'VG'
+  | 'VL'
+  | 'OT'
+  | 'VB'
+  | 'V3'
+  | 'VV'
+  | 'VM'
+  | 'VT'
+  | 'VF'
+  | 'VR'
+  | 'IR'
+  | 'RV'
+  | 'FC'
+  | 'RP'
+  | 'VW'
+  | 'LR'
+  | 'VP'
+  | 'SR'
+  | 'CV'
+  | 'FO'
+  | 'LO'
+  | 'CN'
+  | 'FN'
+  | 'SN'
+  | 'SB';
+
+export type DATEquipmentClass =
+  | 'B'
+  | 'C'
+  | 'D'
+  | 'F'
+  | 'K'
+  | 'N'
+  | 'O'
+  | 'R'
+  | 'S'
+  | 'T'
+  | 'V'
+  | 'Z';
+
+export type DATState =
+  | 'AB'
+  | 'AG'
+  | 'AK'
+  | 'AL'
+  | 'AS'
+  | 'AZ'
+  | 'AR'
+  | 'BC'
+  | 'BJ'
+  | 'BS'
+  | 'CA'
+  | 'CH'
+  | 'CI'
+  | 'CL'
+  | 'CO'
+  | 'CP'
+  | 'CT'
+  | 'CU'
+  | 'DC'
+  | 'DE'
+  | 'DF'
+  | 'DG'
+  | 'EM'
+  | 'FL'
+  | 'GA'
+  | 'GJ'
+  | 'GR'
+  | 'GU'
+  | 'HG'
+  | 'HI'
+  | 'IA'
+  | 'ID'
+  | 'IL'
+  | 'IN'
+  | 'JA'
+  | 'KS'
+  | 'KY'
+  | 'LA'
+  | 'MA'
+  | 'MB'
+  | 'MD'
+  | 'ME'
+  | 'MH'
+  | 'MI'
+  | 'MN'
+  | 'MO'
+  | 'MR'
+  | 'MS'
+  | 'MT'
+  | 'NA'
+  | 'NB'
+  | 'NC'
+  | 'ND'
+  | 'NE'
+  | 'NF'
+  | 'NH'
+  | 'NJ'
+  | 'NL'
+  | 'NM'
+  | 'NY'
+  | 'NT'
+  | 'NS'
+  | 'NU'
+  | 'NV'
+  | 'OA'
+  | 'OH'
+  | 'OK'
+  | 'ON'
+  | 'OR'
+  | 'PA'
+  | 'PE'
+  | 'PQ'
+  | 'PR'
+  | 'PU'
+  | 'QA'
+  | 'QR'
+  | 'RI'
+  | 'SC'
+  | 'SD'
+  | 'SI'
+  | 'SK'
+  | 'SL'
+  | 'SO'
+  | 'TA'
+  | 'TL'
+  | 'TM'
+  | 'TN'
+  | 'TX'
+  | 'UT'
+  | 'VA'
+  | 'VI'
+  | 'VL'
+  | 'VT'
+  | 'WA'
+  | 'WV'
+  | 'WI'
+  | 'WY'
+  | 'YC'
+  | 'YT'
+  | 'ZT';
+
+export type DATZone =
+  | 'Z0'
+  | 'Z1'
+  | 'Z2'
+  | 'Z3'
+  | 'Z4'
+  | 'Z5'
+  | 'Z6'
+  | 'Z7'
+  | 'Z8'
+  | 'Z9'
+  | 'ZC'
+  | 'ZE'
+  | 'ZW'
+  | 'ZM';
+
+export type DATPlace = {
+  city?: string;
+  stateProv?: DATState;
+  latitude?: number;
+  longitude?: number;
+  county?: string;
+  postalCode?: string;
+};
+
 export type DATQueryCriteria = {
   lane: {
     assetType: string;
     equipment: {
-      types: string[];
-      classes?: string[];
+      types?: DATEquipmentType[];
+      classes?: DATEquipmentClass[];
     };
     origin: {
-      place: {
-        city: string;
-        stateProv: string;
-        latitude: number;
-        longitude: number;
-        county?: string;
-        postalCode?: string;
-      };
+      place?: DATPlace;
       area?: {
-        states: string[];
-        zones: string[];
+        states: DATState[];
+        zones: DATZone[];
       };
       open?: Record<string, never>;
       knownPlaceId?: number;
     };
     destination: {
-      place: {
-        city: string;
-        stateProv: string;
-        latitude: number;
-        longitude: number;
-        county?: string;
-        postalCode?: string;
-      };
+      place?: DATPlace;
       area?: {
         states: string[];
         zones: string[];
@@ -47,14 +248,14 @@ export type DATQueryCriteria = {
       knownPlaceId?: number;
     };
   };
-  maxAgeMinutes: number;
-  maxOriginDeadheadMiles: number;
-  maxDestinationDeadheadMiles: number;
-  availability: {
+  maxAgeMinutes?: number;
+  maxOriginDeadheadMiles?: number;
+  maxDestinationDeadheadMiles?: number;
+  availability?: {
     earliestWhen: string;
     latestWhen: string;
   };
-  capacity: {
+  capacity?: {
     shipment?: {
       fullPartial: string;
       maximumLengthFeet: number;
@@ -66,7 +267,7 @@ export type DATQueryCriteria = {
       availableWeightPounds: number;
     };
   };
-  audience: {
+  audience?: {
     includePrivateNetwork: boolean;
     includeLoadBoard: boolean;
   };
@@ -81,7 +282,7 @@ export type DATQueryCriteria = {
   includeTrackableTypes?: string[];
   excludeForeignAssets?: boolean;
   preferredBlockedFilter?: string;
-  carrierHomeStates?: string[];
+  carrierHomeStates?: DATState[];
   countsOnly?: boolean;
   includeOpenDestinationTrucks?: boolean;
   includeRanked?: boolean;
@@ -145,14 +346,10 @@ export type DATMatchingAssetInfo = {
   matchingPostingId: string;
   assetType: string;
   equipmentType: string;
-  origin: {
-    city: string;
-    stateProv: string;
-    latitude: number;
-    longitude: number;
-  };
+  origin: DATPlace;
   destination: {
-    area: DATOriginArea;
+    place?: DATPlace;
+    area?: DATOriginArea;
   };
   capacity: DATCapacity;
 };
