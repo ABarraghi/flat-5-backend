@@ -14,5 +14,11 @@ export default registerAs('app', () => ({
 
     return env === 'dev' || env === 'development';
   },
-  apiBaseUrl: process.env.API_BASE_URL || 'http://localhost:3000'
+  apiBaseUrl: process.env.API_BASE_URL || 'http://localhost:3000',
+  mapbox: {
+    key:
+      process.env.MAPBOX_ACCESS_TOKEN ||
+      'pk.eyJ1IjoiaGlldXB0aDEyMyIsImEiOiJjbG51NzY2dXEwOWl1MnBwZXBkZnZsYmtzIn0.Kl0AW6Z5Uo10WUXnX0uLoA',
+    url: process.env.MAPBOX_URL || 'https://api.mapbox.com/geocoding/v5/mapbox.places/'
+  }
 }));
