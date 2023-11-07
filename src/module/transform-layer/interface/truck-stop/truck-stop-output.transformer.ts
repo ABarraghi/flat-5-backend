@@ -1,112 +1,98 @@
-export type TruckStopGeoCoordinates = {
-  latitude: number;
-  longitude: number;
+export type TruckStopLDeliveryAddressInfo = {
+  originCity: string;
+  originCountry: string;
+  originState: string;
+  destinationCity: string;
+  destinationCountry: string;
+  destinationState: string;
 };
 
-export type TruckStopAddress = {
-  line1: string;
-  line2: string | null;
-  line3: string | null;
-  postalCode: string;
-  cityName: string;
-  stateProvinceCode: string;
-  countryCode: string;
-};
-
-export type TruckStopDateTimeUtc = string; // You can use a more specific type for date/time if needed
-
-export type TruckStopCurrency = {
-  value: number;
-  currencyType: string;
-};
-
-export type TruckStopWeight = {
-  value: number;
-  unit: string;
-};
-
-export type TruckStopCommodity = {
-  description: string;
-  weight: TruckStopWeight;
-};
-
-export type TruckStopAppointment = {
-  facilityOpenDateTimeUtc: TruckStopDateTimeUtc;
-  facilityCloseDateTimeUtc: TruckStopDateTimeUtc;
-  appointmentStartDateTimeUtc: TruckStopDateTimeUtc;
-  appointmentEndDateTimeUtc: TruckStopDateTimeUtc;
-};
-
-export type TruckStopFacility = {
-  name: string;
-  address: TruckStopAddress;
-  geoCoordinates: TruckStopGeoCoordinates;
-  timeZoneOffset: string;
-};
-
-export type TruckStopStopDetails = {
-  commodities: TruckStopCommodity[];
-  stopAttributes: Record<string, boolean>; // Use a more specific type if possible
-  stopNotes: string | null;
-  workType: string;
-  genericAttributes: string[]; // Use a more specific type if possible
-};
-
-type TruckStopStop = {
-  sequence: number;
-  stopType: string;
-  facility: TruckStopFacility;
-  appointment: TruckStopAppointment;
-  stopDetails: TruckStopStopDetails;
-};
-
-export type TruckStopLoadAttributes = Record<string, boolean>; // Use a more specific type if possible
-
-export type TruckStopEquipmentAttribute = {
-  value: number;
-  unit: string;
-};
-
-export type TruckStopEquipment = {
-  equipmentHeight: TruckStopEquipmentAttribute;
-  equipmentLength: TruckStopEquipmentAttribute;
-  equipmentType: string;
-  equipmentWidth: TruckStopEquipmentAttribute;
-  equipmentAttributes: TruckStopLoadAttributes;
-  genericAttributes: string[]; // Use a more specific type if possible
-};
-
-export type TruckStopLoadDistance = {
-  value: number;
-  unit: string;
-};
-
-type Temperature = {
-  value: number;
-  unit: string;
-};
-
-export type TruckStopLoadDetails = {
-  rate: TruckStopCurrency;
-  mode: string;
-  equipment: TruckStopEquipment;
-  loadDistance: TruckStopLoadDistance;
-  weight: TruckStopWeight;
-  temperatureSettings: {
-    preCoolTemperature: Temperature;
-    maximumTemperature: Temperature;
-    minimumTemperature: Temperature;
-  };
-  loadAttributes: TruckStopLoadAttributes;
-  genericAttributes: string[]; // Use a more specific type if possible
+export type TruckStopLDeliveryAddressInfoResponse = {
+  originalCoordinates?: number[];
+  originalPlaceName?: string;
+  destinationCoordinates?: number[];
+  destinationPlaceName?: string;
+  estimationDistance?: number;
+  estimationDurations?: number;
+  estimationAmount?: number;
 };
 
 export type TruckStopLoad = {
-  loadId: number;
-  loadDetails: TruckStopLoadDetails;
-  s;
-  stops: TruckStopStop[];
-};
+  Age: string;
+  Bond: string;
+  BondTypeID: string;
+  Credit: string;
+  DOTNumber: string;
+  DeletedId: string;
+  DeliveryDate: string;
+  DeliveryTime: string;
+  DestinationCity: string;
+  DestinationCountry: string;
+  DestinationDistance: string;
+  DestinationState: string;
+  DestinationZip: {
+    nil: string;
+  };
+  Distance: string;
+  Entered: string;
+  Equipment: string;
+  EquipmentOptions: {
+    'xmlns:b': string;
+  };
+  EquipmentTypes: {
+    'xmlns:b': string;
+    Category: string;
+    CategoryId: string;
+    Code: string;
+    Description: string;
+    FullLoad: {
+      nil: string;
+    };
+    Id: string;
+    IsCategorizable: string;
+    IsCombo: string;
+    IsTruckPost: string;
+    MapToId: string;
+    RequiredOption: {
+      nil: string;
+    };
+    WebserviceOnly: string;
+  };
+  ExperienceFactor: string;
+  FuelCost: string;
+  HandleName: string;
+  HasBonding: string;
+  ID: string;
+  IsDeleted: string;
+  IsFriend: string;
+  Length: string;
+  LoadType: string;
+  MCNumber: string;
+  Mileage: string;
+  OriginCity: string;
+  OriginCountry: string;
+  OriginDistance: string;
+  OriginState: string;
+  PaymentAmount: string;
+  PickupDate: string;
+  PickupTime: string;
+  PointOfContact: string;
+  PointOfContactPhone: string;
+  PricePerGallon: string;
+  Quantity: string;
+  SpecInfo: string;
+  Stops: string;
+  TMCNumber: string;
+  TruckCompanyCity: string;
+  TruckCompanyEmail: string;
+  TruckCompanyFax: string;
+  TruckCompanyId: string;
+  TruckCompanyName: string;
+  TruckCompanyPhone: string;
+  TruckCompanyState: string;
+  Weight: string;
+  Width: string;
+} & TruckStopLDeliveryAddressInfoResponse;
 
 export type TruckStopAuthenticationResponse = {
   access_token: string;

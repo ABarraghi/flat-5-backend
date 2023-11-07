@@ -25,6 +25,7 @@ import {
   TruckStopEquipmentTypes,
   TruckStopInput
 } from '@module/transform-layer/interface/truck-stop/truckt-stop-input.interface';
+import { MapboxService } from '@module/broker/service/mapbox.service';
 
 @Injectable()
 export class LoadService {
@@ -32,52 +33,48 @@ export class LoadService {
     private configService: ConfigService,
     private coyoteBrokerService: CoyoteBrokerService,
     private truckStopBrokerService: TruckStopBrokerService,
+    private mapboxService: MapboxService,
     private inputTransformer: InputTransformer,
     private outputTransformer: OutputTransformer,
     @InjectModel(Booking.name) private bookingModel: Model<Booking>
   ) {}
 
-  async searchAvailableLoads(
-    searchAvailableLoadDto: SearchAvailableLoadDto
-  ): Promise<LoadInterface[]> {
+  async searchAvailableLoads(searchAvailableLoadDto: SearchAvailableLoadDto): Promise<any> {
     const distance = Loc.distance(searchAvailableLoadDto.from, searchAvailableLoadDto.to);
     searchAvailableLoadDto.distance = distance;
     searchAvailableLoadDto.unit = 'Kilometers';
     const loads: LoadInterface[] = [];
-    // if (this.configService.get('broker.coyote.enabled')) {
-    //   const input = this.inputTransformer.transformSearchAvailableLoad(searchAvailableLoadDto, {
-    //     to: 'coyote'
-    //   }) as CoyoteInput;
-    //   const coyoteLoads = await this.coyoteBrokerService.searchAvailableLoads(input);
-    //
-    //   loads.push(
-    //     ...this.outputTransformer.transformSearchAvailableLoads(coyoteLoads, {
-    //       from: 'coyote'
-    //     })
-    //   );
-    // }
+    if (this.configService.get('broker.coyote.enabled')) {
+      const input = this.inputTransformer.transformSearchAvailableLoad(searchAvailableLoadDto, {
+        to: 'coyote'
+      }) as CoyoteInput;
+      const coyoteLoads = await this.coyoteBrokerService.searchAvailableLoads(input);
+
+      loads.push(
+        ...this.outputTransformer.transformSearchAvailableLoads(coyoteLoads, {
+          from: 'coyote'
+        })
+      );
+    }
 
     if (this.configService.get('broker.truck_stop.enabled')) {
       const input = this.inputTransformer.transformSearchAvailableLoad(searchAvailableLoadDto, {
         to: 'truck_stop'
       }) as TruckStopInput;
-      console.log('truck_stop input: ', input);
       // const truckStopLoads = await this.truckStopBrokerService.searchAvailableLoads(input);
       const truckStopLoads = await this.truckStopBrokerService.searchMultipleDetailsLoads(input);
-      // eslint-disable-next-line newline-before-return
-      return truckStopLoads;
-      // loads.push(
-      //   ...this.outputTransformer.transformSearchAvailableLoads(truckStopLoads, {
-      //     from: 'truck_stop'
-      //   })
-      // );
+      loads.push(
+        ...this.outputTransformer.transformSearchAvailableLoads(truckStopLoads, {
+          from: 'truck_stop'
+        })
+      );
     }
 
     let filterLoads = loads.filter(load => {
-      const distance1 = Loc.distance(load.pickupStop.coordinates, searchAvailableLoadDto.from);
-      const distance2 = Loc.distance(load.pickupStop.coordinates, searchAvailableLoadDto.to);
-      const distance3 = Loc.distance(load.deliveryStop.coordinates, searchAvailableLoadDto.from);
-      const distance4 = Loc.distance(load.deliveryStop.coordinates, searchAvailableLoadDto.to);
+      const distance1 = Loc.distance(load.pickupStop?.coordinates, searchAvailableLoadDto.from);
+      const distance2 = Loc.distance(load.pickupStop?.coordinates, searchAvailableLoadDto.to);
+      const distance3 = Loc.distance(load.deliveryStop?.coordinates, searchAvailableLoadDto.from);
+      const distance4 = Loc.distance(load.deliveryStop?.coordinates, searchAvailableLoadDto.to);
 
       return (
         distance1 <= distance &&

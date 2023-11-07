@@ -8,7 +8,7 @@ export type GeoCoordinates = {
 export type Stop = {
   address: any;
   coordinates: GeoCoordinates;
-  appointment: {
+  appointment?: {
     appointmentStartDateTimeUtc: string;
     appointmentEndDateTimeUtc: string;
   };

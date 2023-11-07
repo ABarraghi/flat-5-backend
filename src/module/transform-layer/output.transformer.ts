@@ -6,6 +6,8 @@ import {
 import { Injectable } from '@nestjs/common';
 import { CoyoteOutputTransformer } from '@module/transform-layer/coyote/coyote-output.transformer';
 import { LoadInterface } from '@module/transform-layer/interface/flat-5/load.interface';
+import { TruckStopOutputTransformer } from '@module/transform-layer/truck-stop/truck-stop-output.transformer';
+import { TruckStopLoad } from '@module/transform-layer/interface/truck-stop/truck-stop-output.transformer';
 
 export interface OutputTransformerOptions {
   from: ApiBrokers;
@@ -13,14 +15,17 @@ export interface OutputTransformerOptions {
 
 @Injectable()
 export class OutputTransformer {
-  constructor(private coyoteOutputTransformer: CoyoteOutputTransformer) {}
+  constructor(
+    private coyoteOutputTransformer: CoyoteOutputTransformer,
+    private truckStopOutputTransformer: TruckStopOutputTransformer
+  ) {}
 
   transformSearchAvailableLoads(value: any, options?: OutputTransformerOptions): LoadInterface[] {
     switch (options.from) {
       case 'coyote':
         return this.coyoteOutputTransformer.searchAvailableLoads(value as CoyoteSearchLoadResponse);
       case 'truck_stop':
-        return this.coyoteOutputTransformer.searchAvailableLoads(value as CoyoteSearchLoadResponse);
+        return this.truckStopOutputTransformer.searchAvailableLoads(value as TruckStopLoad[]);
       default:
         return value;
     }

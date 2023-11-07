@@ -4,6 +4,11 @@ import { ConfigService } from '@nestjs/config';
 import { firstValueFrom } from 'rxjs';
 import { Logging } from '@core/logger/logging.service';
 import { TruckStopInput } from '@module/transform-layer/interface/truck-stop/truckt-stop-input.interface';
+import { MapboxService } from '@module/broker/service/mapbox.service';
+import {
+  TruckStopLDeliveryAddressInfo,
+  TruckStopLoad
+} from '@module/transform-layer/interface/truck-stop/truck-stop-output.transformer';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const xml2js = require('xml2js');
 
@@ -20,7 +25,8 @@ export class TruckStopBrokerService {
 
   constructor(
     private configService: ConfigService,
-    private httpService: HttpService
+    private httpService: HttpService,
+    private mapboxService: MapboxService
   ) {
     this.truckStopConfig = this.configService.get('broker.truck_stop');
     this.parser = new xml2js.Parser({
@@ -95,14 +101,14 @@ export class TruckStopBrokerService {
     return xmlString;
   };
 
-  handleRequest = async (xmlRequest, apiName) => {
+  async handleRequest(xmlRequest, apiName) {
     return this.httpService.post(this.truckStopConfig.urlWebServices, xmlRequest, {
       headers: {
         'Content-Type': 'text/xml',
         SOAPAction: `${this.truckStopConfig.urlSoapAction}/${apiName}`
       }
     });
-  };
+  }
 
   async searchAvailableLoads(input: TruckStopInput): Promise<any> {
     try {
@@ -140,7 +146,7 @@ export class TruckStopBrokerService {
     const request = await this.handleRequest(xmlStringRequest, 'GetMultipleLoadDetailResults');
     try {
       const res = await firstValueFrom(request);
-      const result: any[] =
+      let result: any[] =
         (await new Promise((resolve, reject) => {
           this.parser.parseString(res.data, function (error, result) {
             const response =
@@ -159,6 +165,24 @@ export class TruckStopBrokerService {
             resolve(searchItems);
           });
         })) || [];
+
+      const loadFirst: TruckStopLoad = result?.length > 0 ? result[0] : null;
+      result = await Promise.all(
+        result.map(async item => {
+          const input: TruckStopLDeliveryAddressInfo = {
+            originCity: loadFirst.OriginCity,
+            originCountry: loadFirst.OriginState,
+            originState: loadFirst.OriginCountry,
+            destinationCity: loadFirst.DestinationCity,
+            destinationCountry: loadFirst.DestinationState,
+            destinationState: loadFirst.DestinationCountry
+          };
+          const deliveryInfo = await this.mapboxService.transformInfoTruckStop(input);
+          console.log(deliveryInfo);
+
+          return { ...item, ...deliveryInfo };
+        })
+      );
 
       return result;
     } catch (err) {
