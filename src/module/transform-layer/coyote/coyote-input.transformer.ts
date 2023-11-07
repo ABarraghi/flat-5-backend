@@ -1,6 +1,10 @@
-import { CoyoteInput } from '@module/transform-layer/interface/coyote/coyote-input.interface';
+import {
+  CoyoteEquipmentTypes,
+  CoyoteInput
+} from '@module/transform-layer/interface/coyote/coyote-input.interface';
 import { SearchAvailableLoadDto } from '@module/load/validation/search-available-load.dto';
 import { Injectable } from '@nestjs/common';
+import * as dayjs from 'dayjs';
 
 @Injectable()
 export class CoyoteInputTransformer {
@@ -8,35 +12,56 @@ export class CoyoteInputTransformer {
     const input = new CoyoteInput();
     input.origin = {
       location: {
-        latitude: value.from.latitude,
-        longitude: value.from.longitude
+        latitude: value.stopPoints[0].location.coordinate.latitude,
+        longitude: value.stopPoints[0].location.coordinate.longitude
       },
       deadheadRadius: {
-        value: Math.round(value.distance),
-        unit: 'Kilometers'
+        value: Math.round(value.stopPoints[0].radius) ?? 100,
+        unit: value.stopPoints[0].unit ?? 'Kilometers'
       }
-      // appointment: {
-      //   appointmentStartDateTime: '2023-10-16T14:00:00-05:00',
-      //   appointmentEndDateTime: '2023-10-17T12:00:00-05:00'
-      // }
     };
-    if (value.to) {
+    if (value.stopPoints[0].stopDate) {
+      input.origin.appointment = {
+        appointmentStartDateTime: dayjs(value.stopPoints[0].stopDate.from).startOf('day').format(),
+        appointmentEndDateTime: dayjs(value.stopPoints[0].stopDate.from).endOf('day').format()
+      };
+
+      if (value.stopPoints[0].stopDate.to) {
+        input.origin.appointment.appointmentEndDateTime = dayjs(value.stopPoints[0].stopDate.to)
+          .endOf('day')
+          .format();
+      }
+    }
+    if (value.stopPoints[1]) {
       input.destination = {
         location: {
-          latitude: value.to.latitude,
-          longitude: value.to.longitude
+          latitude: value.stopPoints[1].location.coordinate.latitude,
+          longitude: value.stopPoints[1].location.coordinate.longitude
         },
         deadheadRadius: {
-          value: Math.round(value.distance),
-          unit: 'Kilometers'
+          value: Math.round(value.stopPoints[1].radius) ?? 100,
+          unit: value.stopPoints[1].unit ?? 'Kilometers'
         }
-        // appointment: {
-        //   appointmentStartDateTime: '2023-10-16T14:00:00-05:00',
-        //   appointmentEndDateTime: '2023-10-17T12:00:00-05:00'
-        // }
       };
+
+      if (value.stopPoints[1].stopDate) {
+        input.origin.appointment = {
+          appointmentStartDateTime: dayjs(value.stopPoints[1].stopDate.from)
+            .startOf('day')
+            .format(),
+          appointmentEndDateTime: dayjs(value.stopPoints[1].stopDate.from).endOf('day').format()
+        };
+
+        if (value.stopPoints[1].stopDate.to) {
+          input.origin.appointment.appointmentEndDateTime = dayjs(value.stopPoints[1].stopDate.to)
+            .endOf('day')
+            .format();
+        }
+      }
     }
-    input.equipmentType = 'V';
+    // Todo: need to validate later
+    // V/R/F/VR
+    input.equipmentType = (value.equipmentType as CoyoteEquipmentTypes) ?? 'VR';
     input.mode = 'TL_LTL';
 
     return input;

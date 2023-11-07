@@ -16,14 +16,23 @@ export class Loc {
 
     const a =
       Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(radLat1) *
-        Math.cos(radLat2) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
+      Math.cos(radLat1) * Math.cos(radLat2) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
 
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
     // Calculate the distance
     return R * c;
+  }
+
+  static kilometersToMiles(kilometers: number): number {
+    const milesPerKilometer = 0.621371; // 1 kilometer is approximately 0.621371 miles
+
+    return kilometers * milesPerKilometer;
+  }
+
+  static milesToKilometers(miles: number): number {
+    const kilometersPerMile = 1.60934; // 1 mile is approximately 1.60934 kilometers
+
+    return miles * kilometersPerMile;
   }
 }

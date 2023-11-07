@@ -103,9 +103,8 @@ export type CoyoteLoadDetails = {
 
 export type CoyoteLoad = {
   loadId: number;
-  loadDetails: CoyoteLoadDetails;
-  s;
-  stops: CoyoteStop[];
+  loadDetails?: CoyoteLoadDetails;
+  stops?: CoyoteStop[];
 };
 
 export type CoyoteAuthenticationResponse = {
