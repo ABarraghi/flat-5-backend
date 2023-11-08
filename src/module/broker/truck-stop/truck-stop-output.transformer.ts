@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { LoadInterface } from '@module/transform-layer/interface/flat-5/load.interface';
-import { TruckStopLoad } from '@module/transform-layer/interface/truck-stop/truck-stop-output.transformer';
+import { LoadInterface } from '@module/broker/interface/flat-5/load.interface';
+import { TruckStopLoad } from '@module/broker/interface/truck-stop/truck-stop-output.transformer';
 
 @Injectable()
 export class TruckStopOutputTransformer {

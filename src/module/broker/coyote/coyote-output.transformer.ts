@@ -1,12 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import {
-  BookingLoad,
-  LoadInterface
-} from '@module/transform-layer/interface/flat-5/load.interface';
-import {
-  CoyoteLoad,
-  CoyoteSearchLoadResponse
-} from '@module/transform-layer/interface/coyote/coyote-response.interface';
+import { BookingLoad, LoadInterface } from '@module/broker/interface/flat-5/load.interface';
+import { CoyoteLoad, CoyoteSearchLoadResponse } from '@module/broker/interface/coyote/coyote-response.interface';
 
 @Injectable()
 export class CoyoteOutputTransformer {

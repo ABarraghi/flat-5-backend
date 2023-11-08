@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { LoadInterface } from '@module/transform-layer/interface/flat-5/load.interface';
-import { DATRetrieveAssetsResponse } from '@module/transform-layer/interface/dat/dat-response.interface';
+import { LoadInterface } from '@module/broker/interface/flat-5/load.interface';
+import { DATRetrieveAssetsResponse } from '@module/broker/interface/dat/dat-response.interface';
 
 @Injectable()
 export class DatOutputTransformer {

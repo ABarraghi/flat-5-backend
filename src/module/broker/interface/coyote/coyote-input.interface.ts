@@ -1,7 +1,7 @@
 import {
   CoyoteGeoCoordinates,
   CoyoteLoad
-} from '@module/transform-layer/interface/coyote/coyote-response.interface';
+} from '@module/broker/interface/coyote/coyote-response.interface';
 
 export type CoyoteUnits = 'Miles' | 'Kilometers';
 export type CoyoteEquipmentTypes =

@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { LoadService } from '@module/load/service/load.service';
 import { SearchAvailableLoadDto } from '@module/load/validation/search-available-load.dto';
-import { ApiBrokers, isApiBroker } from '@module/transform-layer/interface/flat-5/common.interface';
+import { ApiBrokers, isApiBroker } from '@module/broker/interface/flat-5/common.interface';
 import { BookLoadDto } from '@module/load/validation/book-load.dto';
 
 @Controller('loads')

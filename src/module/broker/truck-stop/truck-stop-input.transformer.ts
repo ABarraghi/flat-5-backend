@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import {
   TruckStopEquipmentTypes,
   TruckStopInput
-} from '@module/transform-layer/interface/truck-stop/truckt-stop-input.interface';
+} from '@module/broker/interface/truck-stop/truckt-stop-input.interface';
 import * as dayjs from 'dayjs';
 
 @Injectable()

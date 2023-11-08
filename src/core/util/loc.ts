@@ -1,4 +1,4 @@
-import { GeoCoordinates } from '@module/transform-layer/interface/flat-5/load.interface';
+import { GeoCoordinates } from '@module/broker/interface/flat-5/load.interface';
 
 export class Loc {
   static distance(origin: GeoCoordinates, destination: GeoCoordinates): number {
@@ -39,6 +39,7 @@ export class Loc {
   static metersToMiles(meters: number) {
     return meters * 0.000621371192;
   }
+
   static milesToMeters(miles: number) {
     return miles * 1609.344;
   }

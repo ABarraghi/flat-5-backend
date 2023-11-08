@@ -11,13 +11,13 @@ import {
   DATQueriesResponse,
   DATQueryResponse,
   DATRetrieveAssetsResponse
-} from '@module/transform-layer/interface/dat/dat-response.interface';
+} from '@module/broker/interface/dat/dat-response.interface';
 import {
   DATCreateAssetQueryInput,
   DATGetAssetQueriesInput,
   DATGetAssetQueryDetailInput,
   DATRetrieveAssetsQueryInput
-} from '@module/transform-layer/interface/dat/dat-input.interface';
+} from '@module/broker/interface/dat/dat-input.interface';
 
 @Injectable()
 export class DatBrokerService {
@@ -197,10 +197,7 @@ export class DatBrokerService {
       })
       .pipe(
         catchError(e => {
-          Logging.error(
-            '[DAT Service] Retrieve Details of a Previously Queried Asset got error',
-            e
-          );
+          Logging.error('[DAT Service] Retrieve Details of a Previously Queried Asset got error', e);
           throw new BadRequestException('DAT007');
         })
       );

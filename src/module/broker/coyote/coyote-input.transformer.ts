@@ -1,7 +1,4 @@
-import {
-  CoyoteEquipmentTypes,
-  CoyoteInput
-} from '@module/transform-layer/interface/coyote/coyote-input.interface';
+import { CoyoteEquipmentTypes, CoyoteInput } from '@module/broker/interface/coyote/coyote-input.interface';
 import { SearchAvailableLoadDto } from '@module/load/validation/search-available-load.dto';
 import { Injectable } from '@nestjs/common';
 import * as dayjs from 'dayjs';
@@ -27,9 +24,7 @@ export class CoyoteInputTransformer {
       };
 
       if (value.stopPoints[0].stopDate.to) {
-        input.origin.appointment.appointmentEndDateTime = dayjs(value.stopPoints[0].stopDate.to)
-          .endOf('day')
-          .format();
+        input.origin.appointment.appointmentEndDateTime = dayjs(value.stopPoints[0].stopDate.to).endOf('day').format();
       }
     }
     if (value.stopPoints[1]) {
@@ -46,9 +41,7 @@ export class CoyoteInputTransformer {
 
       if (value.stopPoints[1].stopDate) {
         input.origin.appointment = {
-          appointmentStartDateTime: dayjs(value.stopPoints[1].stopDate.from)
-            .startOf('day')
-            .format(),
+          appointmentStartDateTime: dayjs(value.stopPoints[1].stopDate.from).startOf('day').format(),
           appointmentEndDateTime: dayjs(value.stopPoints[1].stopDate.from).endOf('day').format()
         };
 
