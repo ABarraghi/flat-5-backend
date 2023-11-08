@@ -101,7 +101,7 @@ export class MapboxService {
     const response = await this.directionsService.getDirections(directionsRequest).send();
     const route = response.body.routes[0];
 
-    const distance = Convert.metersToMiles(route.distance); // (meters)
+    const distance = Convert.metersToMiles(route.distance); // (miles)
     const durations = route.duration / 60; // (minutes)
     const deadheadMiles = distance; // Need to confirm what is deadheadMiles, assume deadheadMiles= distance
     const amount = distance * loadedMileRate + deadheadMiles * deadheadMileRate;
