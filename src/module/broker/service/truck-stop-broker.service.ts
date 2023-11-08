@@ -41,7 +41,16 @@ export class TruckStopBrokerService {
     const integrationId = this.truckStopConfig.integrationId;
     const password = this.truckStopConfig.password;
     const userName = this.truckStopConfig.userName;
-    const xmlString = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:v12="http://webservices.truckstop.com/v12"
+    let filterPickupDate = '';
+    if (input.pickupDates?.length > 0) {
+      input.pickupDates.forEach(pickupDate => {
+        filterPickupDate += `<arr:dateTime>${
+          pickupDate ? pickupDate : '0001-01-01'
+        }</arr:dateTime>`;
+      });
+    }
+    const xmlString = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" 
+        xmlns:v12="http://webservices.truckstop.com/v12"
         xmlns:web="http://schemas.datacontract.org/2004/07/WebServices"
         xmlns:web1="http://schemas.datacontract.org/2004/07/WebServices.Searching"
         xmlns:truc="http://schemas.datacontract.org/2004/07/Truckstop2.Objects"
@@ -87,9 +96,7 @@ export class TruckStopBrokerService {
                             <web1:PageNumber>0</web1:PageNumber>
                             <web1:PageSize>50</web1:PageSize>
                             <web1:PickupDates>
-                                <arr:dateTime>${
-                                  input.pickupDate ? input.pickupDate : '0001-01-01'
-                                }</arr:dateTime>
+                                ${filterPickupDate}
                             </web1:PickupDates>
                             <web1:SortDescending>false</web1:SortDescending>
                         </web1:Criteria>
@@ -146,7 +153,7 @@ export class TruckStopBrokerService {
     const request = await this.handleRequest(xmlStringRequest, 'GetMultipleLoadDetailResults');
     try {
       const res = await firstValueFrom(request);
-      let result: any[] =
+      const result: any[] =
         (await new Promise((resolve, reject) => {
           this.parser.parseString(res.data, function (error, result) {
             const response =
@@ -166,16 +173,15 @@ export class TruckStopBrokerService {
           });
         })) || [];
 
-      const loadFirst: TruckStopLoad = result?.length > 0 ? result[0] : null;
-      result = await Promise.all(
+      return Promise.all(
         result.map(async item => {
           const input: TruckStopLDeliveryAddressInfo = {
-            originCity: loadFirst.OriginCity,
-            originCountry: loadFirst.OriginState,
-            originState: loadFirst.OriginCountry,
-            destinationCity: loadFirst.DestinationCity,
-            destinationCountry: loadFirst.DestinationState,
-            destinationState: loadFirst.DestinationCountry
+            originCity: item.OriginCity,
+            originCountry: item.OriginState,
+            originState: item.OriginCountry,
+            destinationCity: item.DestinationCity,
+            destinationCountry: item.DestinationState,
+            destinationState: item.DestinationCountry
           };
           const deliveryInfo = await this.mapboxService.transformInfoTruckStop(input);
           console.log(deliveryInfo);
@@ -183,8 +189,6 @@ export class TruckStopBrokerService {
           return { ...item, ...deliveryInfo };
         })
       );
-
-      return result;
     } catch (err) {
       if (err.response?.data) {
         Logging.error(
@@ -197,24 +201,7 @@ export class TruckStopBrokerService {
       throw new BadRequestException('TS002');
     }
   }
-
-  //
   // async getLoadDetail(loadId: number): Promise<CoyoteLoadDetailResponse> {
-  //   const url = `${this.coyoteConfig.host}/${this.coyoteConfig.apiPrefix}/AvailableLoads/${loadId}`;
-  //   const request = this.httpService
-  //     .get<CoyoteLoadDetailResponse>(url, {
-  //       headers: {
-  //         Authorization: await this.generateAccessToken()
-  //       }
-  //     })
-  //     .pipe(
-  //       catchError(e => {
-  //         Logging.error('[Coyote] Get Load Detail got error', e);
-  //         throw new BadRequestException('CYT003');
-  //       })
-  //     );
-  //   const res = await firstValueFrom(request);
-  //
   //   return res.data;
   // }
 }

@@ -14,16 +14,21 @@ export class TruckStopOutputTransformer {
       loadModel.pickupStop = {
         address: load.originalPlaceName,
         coordinates: {
-          latitude: load?.originalCoordinates[1],
-          longitude: load?.originalCoordinates[0]
+          latitude: load?.originalCoordinates?.length > 1 ? load?.originalCoordinates[1] : 0,
+          longitude: load?.originalCoordinates?.length > 1 ? load?.originalCoordinates[0] : 0
         }
       };
       loadModel.deliveryStop = {
         address: load.destinationPlaceName,
         coordinates: {
-          latitude: load.destinationCoordinates[1],
-          longitude: load.destinationCoordinates[0]
+          latitude: load?.destinationCoordinates?.length > 1 ? load?.destinationCoordinates[1] : 0,
+          longitude: load?.destinationCoordinates?.length > 1 ? load?.destinationCoordinates[0] : 0
         }
+      };
+      loadModel.metadata = {
+        estimationDistance: load?.estimationDistance,
+        estimationDurations: load?.estimationDurations,
+        estimationAmount: load?.estimationAmount
       };
       loads.push(loadModel);
     }

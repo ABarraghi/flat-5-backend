@@ -14,10 +14,10 @@ import { CoyoteOutputTransformer } from '@module/transform-layer/coyote/coyote-o
 import { DatInputTransformer } from '@module/transform-layer/dat/dat-input.transformer';
 import { DatOutputTransformer } from '@module/transform-layer/dat/dat-output.transformer';
 import { TruckStopBrokerService } from '@module/broker/service/truck-stop-broker.service';
-import {
-  TruckStopInput
-} from '@module/transform-layer/interface/truck-stop/truckt-stop-input.interface';
+import { TruckStopInput } from '@module/transform-layer/interface/truck-stop/truckt-stop-input.interface';
 import { MapboxService } from '@module/broker/service/mapbox.service';
+import { TruckStopOutputTransformer } from '@module/transform-layer/truck-stop/truck-stop-output.transformer';
+import { TruckStopInputTransformer } from '@module/transform-layer/truck-stop/truck-stop-input.transformer';
 
 @Injectable()
 export class LoadService {
@@ -29,6 +29,8 @@ export class LoadService {
     private coyoteOutputTransformer: CoyoteOutputTransformer,
     private datInputTransformer: DatInputTransformer,
     private datOutputTransformer: DatOutputTransformer,
+    private truckStopInputTransformer: TruckStopInputTransformer,
+    private truckStopOutputTransformer: TruckStopOutputTransformer,
     private truckStopBrokerService: TruckStopBrokerService,
     private mapboxService: MapboxService,
     @InjectModel(Booking.name) private bookingModel: Model<Booking>
@@ -56,16 +58,12 @@ export class LoadService {
       loads.push(...this.datOutputTransformer.searchAvailableLoads(datMatches));
     }
     if (this.configService.get('broker.truck_stop.enabled')) {
-      const input = this.inputTransformer.transformSearchAvailableLoad(searchAvailableLoadDto, {
-        to: 'truck_stop'
-      }) as TruckStopInput;
-      // const truckStopLoads = await this.truckStopBrokerService.searchAvailableLoads(input);
+      const input = this.truckStopInputTransformer.searchAvailableLoads(
+        searchAvailableLoadDto
+      ) as TruckStopInput;
+      console.log(input);
       const truckStopLoads = await this.truckStopBrokerService.searchMultipleDetailsLoads(input);
-      loads.push(
-        ...this.outputTransformer.transformSearchAvailableLoads(truckStopLoads, {
-          from: 'truck_stop'
-        })
-      );
+      loads.push(...this.truckStopOutputTransformer.searchAvailableLoads(truckStopLoads));
     }
 
     return loads;

@@ -3,8 +3,8 @@ import { CoyoteInputTransformer } from '@module/transform-layer/coyote/coyote-in
 import { CoyoteOutputTransformer } from '@module/transform-layer/coyote/coyote-output.transformer';
 import { DatInputTransformer } from '@module/transform-layer/dat/dat-input.transformer';
 import { DatOutputTransformer } from '@module/transform-layer/dat/dat-output.transformer';
-import { TruckStopInputTransformer } from '@module/transform-layer/truck-stop/truck-stop.transformer';
 import { TruckStopOutputTransformer } from '@module/transform-layer/truck-stop/truck-stop-output.transformer';
+import { TruckStopInputTransformer } from '@module/transform-layer/truck-stop/truck-stop-input.transformer';
 
 @Module({
   providers: [

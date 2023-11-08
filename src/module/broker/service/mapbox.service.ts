@@ -71,52 +71,56 @@ export class MapboxService {
   async transformInfoTruckStop(
     input: TruckStopLDeliveryAddressInfo
   ): Promise<TruckStopLDeliveryAddressInfoResponse> {
-    const origin = await this.searchAddress(
-      input.originCity,
-      input.originState,
-      input.originCountry
-    );
-    const destination = await this.searchAddress(
-      input.destinationCity,
-      input.destinationState,
-      input.destinationCountry
-    );
-    if (!origin?.center || !destination.center) {
-      return null;
-    }
-    const waypoints = [
-      {
-        coordinates: origin.center
-      },
-      {
-        coordinates: destination.center
+    try {
+      const origin = await this.searchAddress(
+        input.originCity,
+        input.originState,
+        input.originCountry
+      );
+      const destination = await this.searchAddress(
+        input.destinationCity,
+        input.destinationState,
+        input.destinationCountry
+      );
+      if (!origin?.center || !destination.center) {
+        return null;
       }
-    ];
+      const waypoints = [
+        {
+          coordinates: origin.center
+        },
+        {
+          coordinates: destination.center
+        }
+      ];
 
-    const directionsRequest = {
-      waypoints
-    };
-    const loadedMileRate = 2.5;
-    const deadheadMileRate = 0.75;
-    const response = await this.directionsService.getDirections(directionsRequest).send();
-    const route = response.body.routes[0];
+      const directionsRequest = {
+        waypoints
+      };
+      const loadedMileRate = 2.5;
+      const deadheadMileRate = 0.75;
+      const response = await this.directionsService.getDirections(directionsRequest).send();
+      const route = response.body.routes[0];
 
-    const distance = Convert.metersToMiles(route.distance); // (miles)
-    const durations = route.duration / 60; // (minutes)
-    const deadheadMiles = distance; // Need to confirm what is deadheadMiles, assume deadheadMiles= distance
-    const amount = distance * loadedMileRate + deadheadMiles * deadheadMileRate;
-    console.log(`Distance: ${distance} miles`);
-    console.log(`Duration: ${durations} minutes`);
-    const result: TruckStopLDeliveryAddressInfoResponse = {
-      originalCoordinates: origin.center,
-      originalPlaceName: origin.place_name,
-      destinationCoordinates: destination.center,
-      destinationPlaceName: destination.place_name,
-      estimationDistance: distance,
-      estimationDurations: durations,
-      estimationAmount: amount
-    };
+      const distance = Convert.metersToMiles(route.distance); // (miles)
+      const durations = route.duration / 60; // (minutes)
+      const deadheadMiles = distance; // Need to confirm what is deadheadMiles, assume deadheadMiles= distance
+      const amount = distance * loadedMileRate + deadheadMiles * deadheadMileRate;
+      console.log(`Distance: ${distance} miles`);
+      console.log(`Duration: ${durations} minutes`);
+      const result: TruckStopLDeliveryAddressInfoResponse = {
+        originalCoordinates: origin.center,
+        originalPlaceName: origin.place_name,
+        destinationCoordinates: destination.center,
+        destinationPlaceName: destination.place_name,
+        estimationDistance: distance,
+        estimationDurations: durations,
+        estimationAmount: amount
+      };
 
-    return result;
+      return result;
+    } catch (e) {
+      throw e;
+    }
   }
 }

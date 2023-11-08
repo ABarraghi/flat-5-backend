@@ -101,7 +101,7 @@ export class TruckStopInput {
   equipmentType: TruckStopEquipmentTypes;
   // equipmentType: string;
   loadType: LoadType;
-  pickupDate: string;
+  pickupDates: string[];
 }
 
 // export class CoyoteBookLoadSimpleInput {

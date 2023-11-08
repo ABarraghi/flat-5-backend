@@ -18,7 +18,7 @@ export default registerAs('broker', () => ({
     serviceAccountPassword: process.env.SERVICE_ACCOUNT_PASSWORD || 'siE1xth3tSzG0jg'
   },
   truck_stop: {
-    enabled: process.env.TRUCK_STOP_ENABLED || true,
+    enabled: process.env.TRUCK_STOP_ENABLED == 'true',
     urlWebServices:
       process.env.TRUCK_STOP_URL_WEB_SERVICES ||
       'http://testws.truckstop.com:8080/V13/Searching/LoadSearch.svc',
