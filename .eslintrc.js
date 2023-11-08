@@ -29,7 +29,7 @@ module.exports = {
         argsIgnorePattern: '^_'
       }
     ],
-    'max-len': ['error', { code: 120 }],
+    'max-len': ['error', { code: 150 }],
     'newline-before-return': 'error'
   }
 };
