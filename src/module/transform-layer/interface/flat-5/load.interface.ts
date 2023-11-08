@@ -6,11 +6,15 @@ export type GeoCoordinates = {
 };
 
 export type Stop = {
-  address: any;
-  coordinates: GeoCoordinates;
+  address?: any;
+  city?: string;
+  state?: string;
+  country?: string;
+  postalCode?: string;
+  coordinates?: GeoCoordinates;
   appointment?: {
-    appointmentStartDateTimeUtc: string;
-    appointmentEndDateTimeUtc: string;
+    startTime?: string;
+    endTime?: string;
   };
 };
 
@@ -19,6 +23,7 @@ export class LoadInterface {
   loadId: string;
   pickupStop: Stop;
   deliveryStop: Stop;
+  metadata?: any;
 }
 
 export class BookingLoad {

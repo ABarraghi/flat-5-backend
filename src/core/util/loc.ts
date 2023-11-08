@@ -23,4 +23,16 @@ export class Loc {
     // Calculate the distance
     return R * c;
   }
+
+  static kilometersToMiles(kilometers: number): number {
+    const milesPerKilometer = 0.621371; // 1 kilometer is approximately 0.621371 miles
+
+    return kilometers * milesPerKilometer;
+  }
+
+  static milesToKilometers(miles: number): number {
+    const kilometersPerMile = 1.60934; // 1 mile is approximately 1.60934 kilometers
+
+    return miles * kilometersPerMile;
+  }
 }
