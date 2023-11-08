@@ -5,10 +5,7 @@ import { firstValueFrom } from 'rxjs';
 import { Logging } from '@core/logger/logging.service';
 import { TruckStopInput } from '@module/transform-layer/interface/truck-stop/truckt-stop-input.interface';
 import { MapboxService } from '@module/broker/service/mapbox.service';
-import {
-  TruckStopLDeliveryAddressInfo,
-  TruckStopLoad
-} from '@module/transform-layer/interface/truck-stop/truck-stop-output.transformer';
+import { TruckStopLDeliveryAddressInfo } from '@module/transform-layer/interface/truck-stop/truck-stop-output.transformer';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const xml2js = require('xml2js');
 
