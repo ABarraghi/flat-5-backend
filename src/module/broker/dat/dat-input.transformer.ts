@@ -1,10 +1,7 @@
 import { SearchAvailableLoadDto } from '@module/load/validation/search-available-load.dto';
 import { Injectable } from '@nestjs/common';
-import { DATCreateAssetQueryInput } from '@module/transform-layer/interface/dat/dat-input.interface';
-import {
-  DATQueryCriteria,
-  DATState
-} from '@module/transform-layer/interface/dat/dat-response.interface';
+import { DATCreateAssetQueryInput } from '@module/broker/interface/dat/dat-input.interface';
+import { DATQueryCriteria, DATState } from '@module/broker/interface/dat/dat-response.interface';
 import { Loc } from '@core/util/loc';
 import * as dayjs from 'dayjs';
 
@@ -52,9 +49,7 @@ export class DatInputTransformer {
         latestWhen: dayjs(value.stopPoints[0].stopDate.from).endOf('day').format()
       };
       if (value.stopPoints[0].stopDate.to) {
-        criteria.availability.latestWhen = dayjs(value.stopPoints[0].stopDate.to)
-          .endOf('day')
-          .format();
+        criteria.availability.latestWhen = dayjs(value.stopPoints[0].stopDate.to).endOf('day').format();
       }
     }
     if (value.stopPoints[1]) {

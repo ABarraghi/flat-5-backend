@@ -1,4 +1,4 @@
-import { ApiBrokers } from '@module/transform-layer/interface/flat-5/common.interface';
+import { ApiBrokers } from '@module/broker/interface/flat-5/common.interface';
 
 export type GeoCoordinates = {
   latitude: number;

@@ -1,4 +1,4 @@
-import { DATQueryCriteria } from '@module/transform-layer/interface/dat/dat-response.interface';
+import { DATQueryCriteria } from '@module/broker/interface/dat/dat-response.interface';
 
 export type DATGetTokenOrganizationInput = {
   username: string;

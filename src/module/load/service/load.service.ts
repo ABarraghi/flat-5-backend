@@ -1,23 +1,23 @@
 import { Injectable } from '@nestjs/common';
 import { SearchAvailableLoadDto } from '@module/load/validation/search-available-load.dto';
 import { ConfigService } from '@nestjs/config';
-import { CoyoteBrokerService } from '@module/broker/service/coyote-broker.service';
-import { LoadInterface } from '@module/transform-layer/interface/flat-5/load.interface';
-import { ApiBrokers } from '@module/transform-layer/interface/flat-5/common.interface';
+import { CoyoteBrokerService } from '@module/broker/coyote/coyote-broker.service';
+import { LoadInterface } from '@module/broker/interface/flat-5/load.interface';
+import { ApiBrokers } from '@module/broker/interface/flat-5/common.interface';
 import { BookLoadDto } from '@module/load/validation/book-load.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Booking } from '@module/load/schema/booking.schema';
 import { Model } from 'mongoose';
-import { DatBrokerService } from '@module/broker/service/dat-broker.service';
-import { CoyoteInputTransformer } from '@module/transform-layer/coyote/coyote-input.transformer';
-import { CoyoteOutputTransformer } from '@module/transform-layer/coyote/coyote-output.transformer';
-import { DatInputTransformer } from '@module/transform-layer/dat/dat-input.transformer';
-import { DatOutputTransformer } from '@module/transform-layer/dat/dat-output.transformer';
-import { TruckStopBrokerService } from '@module/broker/service/truck-stop-broker.service';
-import { TruckStopInput } from '@module/transform-layer/interface/truck-stop/truckt-stop-input.interface';
+import { DatBrokerService } from '@module/broker/dat/dat-broker.service';
+import { CoyoteInputTransformer } from '@module/broker/coyote/coyote-input.transformer';
+import { CoyoteOutputTransformer } from '@module/broker/coyote/coyote-output.transformer';
+import { DatInputTransformer } from '@module/broker/dat/dat-input.transformer';
+import { DatOutputTransformer } from '@module/broker/dat/dat-output.transformer';
+import { TruckStopBrokerService } from '@module/broker/truck-stop/truck-stop-broker.service';
+import { TruckStopInput } from '@module/broker/interface/truck-stop/truckt-stop-input.interface';
 import { MapboxService } from '@module/broker/service/mapbox.service';
-import { TruckStopOutputTransformer } from '@module/transform-layer/truck-stop/truck-stop-output.transformer';
-import { TruckStopInputTransformer } from '@module/transform-layer/truck-stop/truck-stop-input.transformer';
+import { TruckStopOutputTransformer } from '@module/broker/truck-stop/truck-stop-output.transformer';
+import { TruckStopInputTransformer } from '@module/broker/truck-stop/truck-stop-input.transformer';
 
 @Injectable()
 export class LoadService {
@@ -36,9 +36,7 @@ export class LoadService {
     @InjectModel(Booking.name) private bookingModel: Model<Booking>
   ) {}
 
-  async searchAvailableLoads(
-    searchAvailableLoadDto: SearchAvailableLoadDto
-  ): Promise<LoadInterface[] | any> {
+  async searchAvailableLoads(searchAvailableLoadDto: SearchAvailableLoadDto): Promise<LoadInterface[] | any> {
     if (searchAvailableLoadDto.stopPoints.length > 2) {
       searchAvailableLoadDto.stopPoints = searchAvailableLoadDto.stopPoints.slice(0, 2);
       // just handle only 2 stop points for now
@@ -58,9 +56,7 @@ export class LoadService {
       loads.push(...this.datOutputTransformer.searchAvailableLoads(datMatches));
     }
     if (this.configService.get('broker.truck_stop.enabled')) {
-      const input = this.truckStopInputTransformer.searchAvailableLoads(
-        searchAvailableLoadDto
-      ) as TruckStopInput;
+      const input = this.truckStopInputTransformer.searchAvailableLoads(searchAvailableLoadDto) as TruckStopInput;
       if (input.destination && input.origin) {
         const truckStopLoads = await this.truckStopBrokerService.searchMultipleDetailsLoads(input);
         loads.push(...this.truckStopOutputTransformer.searchAvailableLoads(truckStopLoads));

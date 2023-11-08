@@ -3,7 +3,7 @@ import {
   CoyoteBookLoadInput,
   CoyoteBookLoadSimpleInput,
   CoyoteInput
-} from '@module/transform-layer/interface/coyote/coyote-input.interface';
+} from '@module/broker/interface/coyote/coyote-input.interface';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { catchError, firstValueFrom } from 'rxjs';
@@ -13,7 +13,7 @@ import {
   CoyoteAuthenticationResponse,
   CoyoteLoadDetailResponse,
   CoyoteSearchLoadResponse
-} from '@module/transform-layer/interface/coyote/coyote-response.interface';
+} from '@module/broker/interface/coyote/coyote-response.interface';
 
 @Injectable()
 export class CoyoteBrokerService {

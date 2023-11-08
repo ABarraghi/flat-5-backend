@@ -1,12 +1,11 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
-import { firstValueFrom, toArray } from 'rxjs';
+import { firstValueFrom, from, toArray } from 'rxjs';
 import { Logging } from '@core/logger/logging.service';
-import { TruckStopInput } from '@module/transform-layer/interface/truck-stop/truckt-stop-input.interface';
+import { TruckStopInput } from '@module/broker/interface/truck-stop/truckt-stop-input.interface';
 import { MapboxService } from '@module/broker/service/mapbox.service';
-import { TruckStopDeliveryAddressInfo } from '@module/transform-layer/interface/truck-stop/truck-stop-output.transformer';
-import { from } from 'rxjs';
+import { TruckStopDeliveryAddressInfo } from '@module/broker/interface/truck-stop/truck-stop-output.transformer';
 import { mergeMap } from 'rxjs/operators';
 import * as xml2js from 'xml2js';
 
@@ -42,17 +41,15 @@ export class TruckStopBrokerService {
     let filterPickupDate = '';
     if (input.pickupDates?.length > 0) {
       input.pickupDates.forEach(pickupDate => {
-        filterPickupDate += `<arr:dateTime>${
-          pickupDate ? pickupDate : '0001-01-01'
-        }</arr:dateTime>`;
+        filterPickupDate += `<arr:dateTime>${pickupDate ? pickupDate : '0001-01-01'}</arr:dateTime>`;
       });
     }
-    const xmlString = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" 
-        xmlns:v12="http://webservices.truckstop.com/v12"
-        xmlns:web="http://schemas.datacontract.org/2004/07/WebServices"
-        xmlns:web1="http://schemas.datacontract.org/2004/07/WebServices.Searching"
-        xmlns:truc="http://schemas.datacontract.org/2004/07/Truckstop2.Objects"
-        xmlns:arr="http://schemas.microsoft.com/2003/10/Serialization/Arrays">
+    const xmlString = `<soapenv:Envelope xmlns:soapenv='http://schemas.xmlsoap.org/soap/envelope/' 
+        xmlns:v12='http://webservices.truckstop.com/v12'
+        xmlns:web='http://schemas.datacontract.org/2004/07/WebServices'
+        xmlns:web1='http://schemas.datacontract.org/2004/07/WebServices.Searching'
+        xmlns:truc='http://schemas.datacontract.org/2004/07/Truckstop2.Objects'
+        xmlns:arr='http://schemas.microsoft.com/2003/10/Serialization/Arrays'>
             <soapenv:Header/>
             <soapenv:Body>
                 <v12:${requestName}>
@@ -62,23 +59,15 @@ export class TruckStopBrokerService {
                         <web:UserName>${userName}</web:UserName>
                         <web1:Criteria>
                             <web1:DestinationCity>${input.destination.city}</web1:DestinationCity>
-                            <web1:DestinationCountry>${
-                              input.destination.country
-                            }</web1:DestinationCountry>
+                            <web1:DestinationCountry>${input.destination.country}</web1:DestinationCountry>
                                <web1:DestinationLatitude>${
-                                 input.destination.latitude
-                                   ? parseInt(String(input.destination.latitude))
-                                   : 0
+                                 input.destination.latitude ? parseInt(String(input.destination.latitude)) : 0
                                }</web1:DestinationLatitude>
                             <web1:DestinationLongitude>${
                               input.origin.longitude ? parseInt(String(input.origin.longitude)) : 0
                             }</web1:DestinationLongitude>
-                            <web1:DestinationRange>${
-                              input.destination.range
-                            }</web1:DestinationRange>
-                            <web1:DestinationState>${
-                              input.destination.state
-                            }</web1:DestinationState>
+                            <web1:DestinationRange>${input.destination.range}</web1:DestinationRange>
+                            <web1:DestinationState>${input.destination.state}</web1:DestinationState>
                             <web1:EquipmentType>${input.equipmentType}</web1:EquipmentType>
                             <web1:LoadType>${input.loadType}</web1:LoadType>
                             <web1:OriginCity>${input.origin.city}</web1:OriginCity>
@@ -123,8 +112,7 @@ export class TruckStopBrokerService {
       const result: any[] =
         (await new Promise((resolve, reject) => {
           this.parser.parseString(res.data, function (err, result) {
-            const response =
-              result.Envelope.Body.GetLoadSearchResultsResponse.GetLoadSearchResultsResult;
+            const response = result.Envelope.Body.GetLoadSearchResultsResponse.GetLoadSearchResultsResult;
             if (response.Errors?.Error) {
               const errorMessage = response.Errors?.Error.ErrorMessage;
               Logging.error(`[TruckStop] Search Available Loads got error`, errorMessage);
@@ -155,14 +143,10 @@ export class TruckStopBrokerService {
         (await new Promise((resolve, reject) => {
           this.parser.parseString(res.data, function (error, result) {
             const response =
-              result.Envelope.Body.GetMultipleLoadDetailResultsResponse
-                .GetMultipleLoadDetailResultsResult;
+              result.Envelope.Body.GetMultipleLoadDetailResultsResponse.GetMultipleLoadDetailResultsResult;
             if (response.Errors.Error) {
               const errorMessage = response.Errors.Error.ErrorMessage;
-              Logging.error(
-                `[TruckStop] Search Multiple Details Available Loads got error`,
-                errorMessage
-              );
+              Logging.error(`[TruckStop] Search Multiple Details Available Loads got error`, errorMessage);
               reject(errorMessage);
             }
             const searchItems = response.DetailResults.MultipleLoadDetailResult;
@@ -191,16 +175,14 @@ export class TruckStopBrokerService {
       return firstValueFrom(observable);
     } catch (err) {
       if (err.response?.data) {
-        Logging.error(
-          '[TruckStop] Search Multiple Details Available Loads got error',
-          err.response.data
-        );
+        Logging.error('[TruckStop] Search Multiple Details Available Loads got error', err.response.data);
       } else {
         Logging.error('[TruckStop] Search Multiple Details Available Loads got error', err);
       }
       throw new BadRequestException('TS002');
     }
   }
+
   // async getLoadDetail(loadId: number): Promise<CoyoteLoadDetailResponse> {
   //   return res.data;
   // }

@@ -1,20 +1,18 @@
 import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
-import {
-  Feature,
-  FeatureCollection
-} from '@module/transform-layer/interface/mapbox/mapbox-interface';
+import { Feature, FeatureCollection } from '@module/broker/interface/mapbox/mapbox-interface';
 import { map } from 'rxjs/operators';
 import { AxiosResponse } from 'axios';
 import {
   TruckStopDeliveryAddressInfo,
   TruckStopDeliveryAddressInfoResponse
-} from '@module/transform-layer/interface/truck-stop/truck-stop-output.transformer';
+} from '@module/broker/interface/truck-stop/truck-stop-output.transformer';
 import * as mapboxSdk from '@mapbox/mapbox-sdk';
 import * as MapboxDirections from '@mapbox/mapbox-sdk/services/directions';
 import { firstValueFrom } from 'rxjs';
 import { Loc } from '@core/util/loc';
+
 @Injectable()
 export class MapboxService {
   private mapboxConfig: { url: string; key: string };
@@ -35,15 +33,11 @@ export class MapboxService {
     });
   }
 
-  async searchAddress(
-    city: string = '',
-    state: string = '',
-    country: string = ''
-  ): Promise<Feature> {
+  async searchAddress(city: string = '', state: string = '', country: string = ''): Promise<Feature> {
     const searchKey = `${city} ${state} ${country}`;
-    const urlGetPlace = `${this.mapboxConfig.url}/${encodeURIComponent(
-      searchKey
-    )}.json?access_token=${this.mapboxConfig.key}`;
+    const urlGetPlace = `${this.mapboxConfig.url}/${encodeURIComponent(searchKey)}.json?access_token=${
+      this.mapboxConfig.key
+    }`;
     const response = await this.httpService
       .get(urlGetPlace)
       .pipe(map((axiosResponse: AxiosResponse) => axiosResponse.data as FeatureCollection));
@@ -53,10 +47,7 @@ export class MapboxService {
     let result;
     if (data?.features?.length > 0) {
       const features = data?.features.filter(
-        f =>
-          f.place_type.includes('country') ||
-          f.place_type.includes('city') ||
-          f.place_type.includes('place')
+        f => f.place_type.includes('country') || f.place_type.includes('city') || f.place_type.includes('place')
       );
       if (features?.length > 0) {
         result = features[0];
@@ -68,15 +59,9 @@ export class MapboxService {
     return result as Feature;
   }
 
-  async transformInfoTruckStop(
-    input: TruckStopDeliveryAddressInfo
-  ): Promise<TruckStopDeliveryAddressInfoResponse> {
+  async transformInfoTruckStop(input: TruckStopDeliveryAddressInfo): Promise<TruckStopDeliveryAddressInfoResponse> {
     try {
-      const origin = await this.searchAddress(
-        input.originCity,
-        input.originState,
-        input.originCountry
-      );
+      const origin = await this.searchAddress(input.originCity, input.originState, input.originCountry);
       const destination = await this.searchAddress(
         input.destinationCity,
         input.destinationState,

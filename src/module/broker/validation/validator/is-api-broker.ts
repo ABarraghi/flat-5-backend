@@ -1,10 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import {
-  ValidationArguments,
-  ValidatorConstraint,
-  ValidatorConstraintInterface
-} from 'class-validator';
-import { isApiBroker } from '@module/transform-layer/interface/flat-5/common.interface';
+import { ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface } from 'class-validator';
+import { isApiBroker } from '@module/broker/interface/flat-5/common.interface';
 
 @Injectable()
 @ValidatorConstraint({ name: 'isApiBroker' })
