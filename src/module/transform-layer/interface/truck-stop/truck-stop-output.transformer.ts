@@ -1,4 +1,4 @@
-export type TruckStopLDeliveryAddressInfo = {
+export type TruckStopDeliveryAddressInfo = {
   originCity: string;
   originCountry: string;
   originState: string;
@@ -7,7 +7,7 @@ export type TruckStopLDeliveryAddressInfo = {
   destinationState: string;
 };
 
-export type TruckStopLDeliveryAddressInfoResponse = {
+export type TruckStopDeliveryAddressInfoResponse = {
   originalCoordinates?: number[];
   originalPlaceName?: string;
   destinationCoordinates?: number[];
@@ -92,7 +92,7 @@ export type TruckStopLoad = {
   TruckCompanyState: string;
   Weight: string;
   Width: string;
-} & TruckStopLDeliveryAddressInfoResponse;
+} & TruckStopDeliveryAddressInfoResponse;
 
 export type TruckStopAuthenticationResponse = {
   access_token: string;

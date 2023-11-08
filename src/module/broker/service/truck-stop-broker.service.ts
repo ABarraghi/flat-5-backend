@@ -1,13 +1,14 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, toArray } from 'rxjs';
 import { Logging } from '@core/logger/logging.service';
 import { TruckStopInput } from '@module/transform-layer/interface/truck-stop/truckt-stop-input.interface';
 import { MapboxService } from '@module/broker/service/mapbox.service';
-import { TruckStopLDeliveryAddressInfo } from '@module/transform-layer/interface/truck-stop/truck-stop-output.transformer';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const xml2js = require('xml2js');
+import { TruckStopDeliveryAddressInfo } from '@module/transform-layer/interface/truck-stop/truck-stop-output.transformer';
+import { from } from 'rxjs';
+import { mergeMap } from 'rxjs/operators';
+import * as xml2js from 'xml2js';
 
 @Injectable()
 export class TruckStopBrokerService {
@@ -169,10 +170,9 @@ export class TruckStopBrokerService {
             resolve(searchItems);
           });
         })) || [];
-
-      return Promise.all(
-        result.map(async item => {
-          const input: TruckStopLDeliveryAddressInfo = {
+      const observable = from(result).pipe(
+        mergeMap(async item => {
+          const input: TruckStopDeliveryAddressInfo = {
             originCity: item.OriginCity,
             originCountry: item.OriginState,
             originState: item.OriginCountry,
@@ -184,8 +184,11 @@ export class TruckStopBrokerService {
           console.log(deliveryInfo);
 
           return { ...item, ...deliveryInfo };
-        })
+        }),
+        toArray()
       );
+
+      return firstValueFrom(observable);
     } catch (err) {
       if (err.response?.data) {
         Logging.error(

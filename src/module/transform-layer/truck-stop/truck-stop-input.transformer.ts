@@ -18,14 +18,16 @@ export class TruckStopInputTransformer {
       latitude: value.stopPoints[0].location.coordinate.latitude,
       longitude: value.stopPoints[0].location.coordinate.longitude
     };
-    input.destination = {
-      city: value.stopPoints[1].location.city,
-      state: value.stopPoints[1].location.state,
-      country: value.stopPoints[1].location.country,
-      range: value.stopPoints[1].radius | 25,
-      latitude: value.stopPoints[1].location.coordinate.latitude,
-      longitude: value.stopPoints[1].location.coordinate.longitude
-    };
+    if (value.stopPoints[1]) {
+      input.destination = {
+        city: value.stopPoints[1].location.city,
+        state: value.stopPoints[1].location.state,
+        country: value.stopPoints[1].location.country,
+        range: value.stopPoints[1].radius | 25,
+        latitude: value.stopPoints[1].location.coordinate.latitude,
+        longitude: value.stopPoints[1].location.coordinate.longitude
+      };
+    }
 
     const pickupDates = [];
     if (value.stopPoints[0].stopDate) {

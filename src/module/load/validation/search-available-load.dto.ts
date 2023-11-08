@@ -22,18 +22,6 @@ export class CoordinateDto {
 
   @IsLongitude()
   longitude: number;
-
-  @IsOptional()
-  city: string;
-
-  @IsOptional()
-  state: string;
-
-  @IsOptional()
-  country: string;
-
-  @IsOptional()
-  range: number;
 }
 
 export class LocationDto {
