@@ -40,13 +40,13 @@ export class LoadService {
       // just handle only 2 stop points for now
     }
     const loads: LoadInterface[] = [];
-    if (!this.configService.get('broker.coyote.enabled')) {
+    if (this.configService.get('broker.coyote.enabled')) {
       const input = this.coyoteInputTransformer.searchAvailableLoads(searchAvailableLoadDto);
       const coyoteLoads = await this.coyoteBrokerService.searchAvailableLoads(input);
 
       loads.push(...this.coyoteOutputTransformer.searchAvailableLoads(coyoteLoads));
     }
-    if (!this.configService.get('broker.dat.enabled')) {
+    if (this.configService.get('broker.dat.enabled')) {
       const input = this.datInputTransformer.createAssetQuery(searchAvailableLoadDto);
       const assetQuery = await this.datBrokerService.createAssetQuery(input);
       const datMatches = await this.datBrokerService.retrieveAssetQueryResults(assetQuery.queryId);
