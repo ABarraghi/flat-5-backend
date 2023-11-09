@@ -92,7 +92,7 @@ export type TruckStopLoad = {
   TruckCompanyState: string;
   Weight: string;
   Width: string;
-} & TruckStopDeliveryAddressInfoResponse;
+};
 
 export type TruckStopAuthenticationResponse = {
   access_token: string;

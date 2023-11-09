@@ -86,7 +86,7 @@ export type LoadType = 'Nothing' | 'Full' | 'All' | 'Partial';
 // Specialized 2,3,4,79,77,5,6,7,8,9,75,10,11,19,23,24,28,29,32,33,40,42
 // Hot Shot 2,3,4,79,77,5,6,7,8,9,75,10,11,19,23,24,28,29,32,33,40,42
 
-export class LocationInfo {
+export class TruckStopLocationInfo {
   city: string;
   country: string;
   range: number;
@@ -96,8 +96,8 @@ export class LocationInfo {
 }
 
 export class TruckStopInput {
-  origin: LocationInfo;
-  destination: LocationInfo;
+  origin: TruckStopLocationInfo;
+  destination: TruckStopLocationInfo;
   equipmentType: TruckStopEquipmentTypes;
   // equipmentType: string;
   loadType: LoadType;

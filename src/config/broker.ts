@@ -14,16 +14,14 @@ export default registerAs('broker', () => ({
     host: process.env.DAT_HOST || 'api.nprod.dat.com',
     identityService: process.env.DAT_IDENTITY_SERVICE || 'https://identity.',
     freightService: process.env.DAT_FREIGHT_SERVICE || 'https://freight.',
-    serviceAccountEmail: process.env.SERVICE_ACCOUNT_EMAIL || 'developersupport+noerr@dat.com',
-    serviceAccountPassword: process.env.SERVICE_ACCOUNT_PASSWORD || 'siE1xth3tSzG0jg'
+    serviceAccountEmail: process.env.DAT_SERVICE_ACCOUNT_EMAIL || 'developersupport+noerr@dat.com',
+    serviceAccountPassword: process.env.DAT_SERVICE_ACCOUNT_PASSWORD || 'siE1xth3tSzG0jg'
   },
-  truck_stop: {
-    enabled: process.env.TRUCK_STOP_ENABLED == 'true',
+  truckStop: {
+    enabled: process.env.TRUCK_STOP_ENABLED !== 'false',
     urlWebServices:
-      process.env.TRUCK_STOP_URL_WEB_SERVICES ||
-      'http://testws.truckstop.com:8080/V13/Searching/LoadSearch.svc',
-    urlSoapAction:
-      process.env.TRUCK_STOP_URL_SOAP_ACTION || 'http://webservices.truckstop.com/v12/ILoadSearch',
+      process.env.TRUCK_STOP_URL_WEB_SERVICES || 'http://testws.truckstop.com:8080/V13/Searching/LoadSearch.svc',
+    urlSoapAction: process.env.TRUCK_STOP_URL_SOAP_ACTION || 'http://webservices.truckstop.com/v12/ILoadSearch',
     email: process.env.TRUCK_STOP_EMAIL || 'scott@noerr-inc.com',
     userName: process.env.TRUCK_STOP_USERNAME || 'NoerrWS',
     // password: process.env.TRUCK_STOP_PASSWORD || 'Developer234!',

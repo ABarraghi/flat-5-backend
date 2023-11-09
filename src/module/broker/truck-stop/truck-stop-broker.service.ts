@@ -1,12 +1,10 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
-import { firstValueFrom, from, toArray } from 'rxjs';
+import { catchError, firstValueFrom } from 'rxjs';
 import { Logging } from '@core/logger/logging.service';
 import { TruckStopInput } from '@module/broker/interface/truck-stop/truckt-stop-input.interface';
-import { MapboxService } from '@module/broker/service/mapbox.service';
-import { TruckStopDeliveryAddressInfo } from '@module/broker/interface/truck-stop/truck-stop-output.transformer';
-import { mergeMap } from 'rxjs/operators';
+import { TruckStopLoad } from '@module/broker/interface/truck-stop/truck-stop-output.interface';
 import * as xml2js from 'xml2js';
 
 @Injectable()
@@ -22,10 +20,9 @@ export class TruckStopBrokerService {
 
   constructor(
     private configService: ConfigService,
-    private httpService: HttpService,
-    private mapboxService: MapboxService
+    private httpService: HttpService
   ) {
-    this.truckStopConfig = this.configService.get('broker.truck_stop');
+    this.truckStopConfig = this.configService.get('broker.truckStop');
     this.parser = new xml2js.Parser({
       explicitArray: false,
       mergeAttrs: true,
@@ -95,92 +92,71 @@ export class TruckStopBrokerService {
     return xmlString;
   };
 
-  async handleRequest(xmlRequest, apiName) {
-    return this.httpService.post(this.truckStopConfig.urlWebServices, xmlRequest, {
-      headers: {
-        'Content-Type': 'text/xml',
-        SOAPAction: `${this.truckStopConfig.urlSoapAction}/${apiName}`
-      }
-    });
-  }
-
   async searchAvailableLoads(input: TruckStopInput): Promise<any> {
-    try {
-      const xmlStringRequest = this.generateSearchRequest(input, 'GetLoadSearchResults');
-      const request = await this.handleRequest(xmlStringRequest, 'GetLoadSearchResults');
-      const res = await firstValueFrom(request);
-      const result: any[] =
-        (await new Promise((resolve, reject) => {
-          this.parser.parseString(res.data, function (err, result) {
-            const response = result.Envelope.Body.GetLoadSearchResultsResponse.GetLoadSearchResultsResult;
-            if (response.Errors?.Error) {
-              const errorMessage = response.Errors?.Error.ErrorMessage;
-              Logging.error(`[TruckStop] Search Available Loads got error`, errorMessage);
-              reject(errorMessage);
-            }
-            const searchItems = response.SearchResults.LoadSearchItem;
-            resolve(searchItems);
-          });
-        })) || [];
+    const xmlStringRequest = this.generateSearchRequest(input, 'GetLoadSearchResults');
+    const request = this.httpService
+      .post(this.truckStopConfig.urlWebServices, xmlStringRequest, {
+        headers: {
+          'Content-Type': 'text/xml',
+          SOAPAction: `${this.truckStopConfig.urlSoapAction}/GetLoadSearchResults`
+        }
+      })
+      .pipe(
+        catchError(err => {
+          Logging.error(`[TruckStop] Search Available Loads got error`, err.response?.data ?? err);
+          throw new BadRequestException('TS001');
+        })
+      );
+    const res = await firstValueFrom(request);
+    const result: any[] =
+      (await new Promise((resolve, reject) => {
+        this.parser.parseString(res.data, function (err, result) {
+          const response = result.Envelope.Body.GetLoadSearchResultsResponse.GetLoadSearchResultsResult;
+          if (err || response.Errors?.Error) {
+            const errorMessage = response.Errors?.Error.ErrorMessage;
+            Logging.error(`[TruckStop] Search Available Loads got error`, err ?? errorMessage);
+            reject(errorMessage);
+          }
+          const searchItems = response.SearchResults.LoadSearchItem;
+          resolve(searchItems);
+        });
+      })) ?? [];
 
-      return result;
-    } catch (err) {
-      if (err.response.data) {
-        Logging.error('[TruckStop] Search Available Loads got error', err.response.data);
-      } else {
-        Logging.error(`[TruckStop] Search Available Loads got error`, err);
-      }
-      throw new BadRequestException('TS001');
-    }
+    return result;
   }
 
-  async searchMultipleDetailsLoads(input: TruckStopInput): Promise<any> {
+  async searchMultipleDetailsLoads(input: TruckStopInput): Promise<TruckStopLoad[]> {
     const xmlStringRequest = this.generateSearchRequest(input, 'GetMultipleLoadDetailResults');
-    const request = await this.handleRequest(xmlStringRequest, 'GetMultipleLoadDetailResults');
-    try {
-      const res = await firstValueFrom(request);
-      const result: any[] =
-        (await new Promise((resolve, reject) => {
-          this.parser.parseString(res.data, function (error, result) {
-            const response =
-              result.Envelope.Body.GetMultipleLoadDetailResultsResponse.GetMultipleLoadDetailResultsResult;
-            if (response.Errors.Error) {
-              const errorMessage = response.Errors.Error.ErrorMessage;
-              Logging.error(`[TruckStop] Search Multiple Details Available Loads got error`, errorMessage);
-              reject(errorMessage);
-            }
-            const searchItems = response.DetailResults.MultipleLoadDetailResult;
-
-            resolve(searchItems);
-          });
-        })) || [];
-      const observable = from(result).pipe(
-        mergeMap(async item => {
-          const input: TruckStopDeliveryAddressInfo = {
-            originCity: item.OriginCity,
-            originCountry: item.OriginState,
-            originState: item.OriginCountry,
-            destinationCity: item.DestinationCity,
-            destinationCountry: item.DestinationState,
-            destinationState: item.DestinationCountry
-          };
-          const deliveryInfo = await this.mapboxService.transformInfoTruckStop(input);
-          console.log(deliveryInfo);
-
-          return { ...item, ...deliveryInfo };
-        }),
-        toArray()
+    const request = this.httpService
+      .post(this.truckStopConfig.urlWebServices, xmlStringRequest, {
+        headers: {
+          'Content-Type': 'text/xml',
+          SOAPAction: `${this.truckStopConfig.urlSoapAction}/GetMultipleLoadDetailResults`
+        }
+      })
+      .pipe(
+        catchError(err => {
+          Logging.error(`[TruckStop] Search Multiple Details Available Loads got error`, err.response?.data ?? err);
+          throw new BadRequestException('TS002');
+        })
       );
+    const res = await firstValueFrom(request);
+    const jsonResponses: any[] =
+      (await new Promise((resolve, reject) => {
+        this.parser.parseString(res.data, function (error, result) {
+          const response = result.Envelope.Body.GetMultipleLoadDetailResultsResponse.GetMultipleLoadDetailResultsResult;
+          if (error || response.Errors.Error) {
+            const errorMessage = response.Errors.Error.ErrorMessage;
+            Logging.error(`[TruckStop] Search Multiple Details Available Loads got error`, error ?? errorMessage);
+            reject(errorMessage);
+          }
+          const searchItems = response.DetailResults.MultipleLoadDetailResult;
 
-      return firstValueFrom(observable);
-    } catch (err) {
-      if (err.response?.data) {
-        Logging.error('[TruckStop] Search Multiple Details Available Loads got error', err.response.data);
-      } else {
-        Logging.error('[TruckStop] Search Multiple Details Available Loads got error', err);
-      }
-      throw new BadRequestException('TS002');
-    }
+          resolve(searchItems);
+        });
+      })) ?? [];
+
+    return jsonResponses;
   }
 
   // async getLoadDetail(loadId: number): Promise<CoyoteLoadDetailResponse> {

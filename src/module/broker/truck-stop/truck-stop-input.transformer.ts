@@ -14,7 +14,7 @@ export class TruckStopInputTransformer {
       city: value.stopPoints[0].location.city,
       state: value.stopPoints[0].location.state,
       country: value.stopPoints[0].location.country,
-      range: value.stopPoints[0].radius || 25,
+      range: value.stopPoints[0].radius ?? 25,
       latitude: value.stopPoints[0].location.coordinate.latitude,
       longitude: value.stopPoints[0].location.coordinate.longitude
     };
@@ -23,7 +23,7 @@ export class TruckStopInputTransformer {
         city: value.stopPoints[1].location.city,
         state: value.stopPoints[1].location.state,
         country: value.stopPoints[1].location.country,
-        range: value.stopPoints[1].radius | 25,
+        range: value.stopPoints[1].radius ?? 25,
         latitude: value.stopPoints[1].location.coordinate.latitude,
         longitude: value.stopPoints[1].location.coordinate.longitude
       };
@@ -32,13 +32,19 @@ export class TruckStopInputTransformer {
     const pickupDates = [];
     if (value.stopPoints[0].stopDate) {
       const fromDate = dayjs(value.stopPoints[0].stopDate.from).startOf('day').format();
-      const toDate = dayjs(value.stopPoints[0].stopDate.to).endOf('day').format();
+      let toDate = dayjs(value.stopPoints[0].stopDate.from).endOf('day').format(); // cause to-date is optional
+      if (value.stopPoints[0].stopDate.to) {
+        toDate = dayjs(value.stopPoints[0].stopDate.to).endOf('day').format();
+      }
       pickupDates.push(fromDate);
       pickupDates.push(toDate);
     }
     if (value.stopPoints[1].stopDate) {
       const fromDate = dayjs(value.stopPoints[1].stopDate.from).startOf('day').format();
-      const toDate = dayjs(value.stopPoints[1].stopDate.to).endOf('day').format();
+      let toDate = dayjs(value.stopPoints[1].stopDate.from).endOf('day').format(); // cause to-date is optional
+      if (value.stopPoints[1].stopDate.to) {
+        toDate = dayjs(value.stopPoints[1].stopDate.to).endOf('day').format();
+      }
       pickupDates.push(fromDate);
       pickupDates.push(toDate);
     }
