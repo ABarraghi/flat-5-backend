@@ -15,7 +15,6 @@ import { DatInputTransformer } from '@module/broker/dat/dat-input.transformer';
 import { DatOutputTransformer } from '@module/broker/dat/dat-output.transformer';
 import { TruckStopBrokerService } from '@module/broker/truck-stop/truck-stop-broker.service';
 import { TruckStopInput } from '@module/broker/interface/truck-stop/truckt-stop-input.interface';
-import { MapboxService } from '@module/broker/service/mapbox.service';
 import { TruckStopOutputTransformer } from '@module/broker/truck-stop/truck-stop-output.transformer';
 import { TruckStopInputTransformer } from '@module/broker/truck-stop/truck-stop-input.transformer';
 
@@ -32,7 +31,6 @@ export class LoadService {
     private truckStopInputTransformer: TruckStopInputTransformer,
     private truckStopOutputTransformer: TruckStopOutputTransformer,
     private truckStopBrokerService: TruckStopBrokerService,
-    private mapboxService: MapboxService,
     @InjectModel(Booking.name) private bookingModel: Model<Booking>
   ) {}
 
@@ -55,11 +53,11 @@ export class LoadService {
 
       loads.push(...this.datOutputTransformer.searchAvailableLoads(datMatches));
     }
-    if (this.configService.get('broker.truck_stop.enabled')) {
+    if (this.configService.get('broker.truckStop.enabled')) {
       const input = this.truckStopInputTransformer.searchAvailableLoads(searchAvailableLoadDto) as TruckStopInput;
       if (input.destination && input.origin) {
         const truckStopLoads = await this.truckStopBrokerService.searchMultipleDetailsLoads(input);
-        loads.push(...this.truckStopOutputTransformer.searchAvailableLoads(truckStopLoads));
+        loads.push(...(await this.truckStopOutputTransformer.searchAvailableLoads(truckStopLoads)));
       }
     }
 

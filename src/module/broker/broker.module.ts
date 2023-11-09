@@ -13,6 +13,8 @@ import { DatInputTransformer } from '@module/broker/dat/dat-input.transformer';
 import { DatOutputTransformer } from '@module/broker/dat/dat-output.transformer';
 import { TruckStopInputTransformer } from '@module/broker/truck-stop/truck-stop-input.transformer';
 import { TruckStopOutputTransformer } from '@module/broker/truck-stop/truck-stop-output.transformer';
+import { truckStopErrorCode } from '@module/broker/const/truck-stop-error-code';
+import { PriceService } from '@module/broker/service/price.service';
 
 @Module({
   imports: [HttpModule],
@@ -21,6 +23,7 @@ import { TruckStopOutputTransformer } from '@module/broker/truck-stop/truck-stop
     DatBrokerService,
     TruckStopBrokerService,
     MapboxService,
+    PriceService,
     CoyoteInputTransformer,
     CoyoteOutputTransformer,
     DatInputTransformer,
@@ -34,6 +37,7 @@ import { TruckStopOutputTransformer } from '@module/broker/truck-stop/truck-stop
     DatBrokerService,
     TruckStopBrokerService,
     MapboxService,
+    PriceService,
     CoyoteInputTransformer,
     CoyoteOutputTransformer,
     DatInputTransformer,
@@ -47,5 +51,6 @@ export class BrokerModule {
   constructor() {
     ErrorCodeService.register(coyoteErrorCodes);
     ErrorCodeService.register(datErrorCodes);
+    ErrorCodeService.register(truckStopErrorCode);
   }
 }
