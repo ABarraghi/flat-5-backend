@@ -54,7 +54,19 @@ export type CoyoteStopDetails = {
 
 type CoyoteStop = {
   sequence: number;
-  stopType: string;
+  stopType:
+    | 'None'
+    | 'Pickup'
+    | 'Delivery'
+    | 'ContainerDepotOrigin'
+    | 'ContainerDepotTermination'
+    | 'OriginRamp'
+    | 'DestinationRamp'
+    | 'OriginPort'
+    | 'DestinationPort'
+    | 'OriginAirport'
+    | 'DestinationAirport'
+    | 'CrossDock';
   facility: CoyoteFacility;
   appointment: CoyoteAppointment;
   stopDetails: CoyoteStopDetails;

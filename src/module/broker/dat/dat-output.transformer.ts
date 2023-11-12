@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { LoadInterface } from '@module/broker/interface/flat-5/load.interface';
+import { Load } from '@module/broker/interface/flat-5/load.interface';
 import { DATRetrieveAssetsResponse } from '@module/broker/interface/dat/dat-response.interface';
 
 @Injectable()
 export class DatOutputTransformer {
-  searchAvailableLoads(value: DATRetrieveAssetsResponse): LoadInterface[] {
-    const loads: LoadInterface[] = [];
+  searchAvailableLoads(value: DATRetrieveAssetsResponse): Load[] {
+    const loads: Load[] = [];
     if (!value || !value.matches || !value.matches.length) return loads;
     value.matches.forEach(match => {
-      const loadModel = new LoadInterface();
+      const loadModel = new Load();
       loadModel.broker = 'dat';
       loadModel.loadId = match.matchId;
       const pickupStop = match.matchingAssetInfo.origin;
@@ -27,17 +27,20 @@ export class DatOutputTransformer {
         }
       };
       const deliveryStop = match.matchingAssetInfo.destination;
-      loadModel.deliveryStop = {
-        city: deliveryStop.place.city,
-        state: deliveryStop.place.stateProv, // maybe multiple states with deliveryStop.area
-        country: deliveryStop.place.county,
-        postalCode: deliveryStop.place.postalCode,
-        coordinates: {
-          latitude: deliveryStop.place.latitude,
-          longitude: deliveryStop.place.longitude
-        }
-      };
-      loadModel.metadata = match;
+      console.log(deliveryStop);
+      if (deliveryStop && deliveryStop.place) {
+        loadModel.deliveryStop = {
+          city: deliveryStop.place.city,
+          state: deliveryStop.place.stateProv, // maybe multiple states with deliveryStop.area
+          country: deliveryStop.place.county,
+          postalCode: deliveryStop.place.postalCode,
+          coordinates: {
+            latitude: deliveryStop.place.latitude,
+            longitude: deliveryStop.place.longitude
+          }
+        };
+      }
+      loadModel.rawLoad = match;
 
       loads.push(loadModel);
     });

@@ -69,7 +69,7 @@ export class CoyoteBrokerService {
         },
         params: new URLSearchParams({
           page: '1',
-          pageSize: '50'
+          pageSize: '20'
         })
       })
       .pipe(
