@@ -81,19 +81,7 @@ export type DATEquipmentType =
   | 'SN'
   | 'SB';
 
-export type DATEquipmentClass =
-  | 'B'
-  | 'C'
-  | 'D'
-  | 'F'
-  | 'K'
-  | 'N'
-  | 'O'
-  | 'R'
-  | 'S'
-  | 'T'
-  | 'V'
-  | 'Z';
+export type DATEquipmentClass = 'B' | 'C' | 'D' | 'F' | 'K' | 'N' | 'O' | 'R' | 'S' | 'T' | 'V' | 'Z';
 
 export type DATState =
   | 'AB'
@@ -197,21 +185,7 @@ export type DATState =
   | 'YT'
   | 'ZT';
 
-export type DATZone =
-  | 'Z0'
-  | 'Z1'
-  | 'Z2'
-  | 'Z3'
-  | 'Z4'
-  | 'Z5'
-  | 'Z6'
-  | 'Z7'
-  | 'Z8'
-  | 'Z9'
-  | 'ZC'
-  | 'ZE'
-  | 'ZW'
-  | 'ZM';
+export type DATZone = 'Z0' | 'Z1' | 'Z2' | 'Z3' | 'Z4' | 'Z5' | 'Z6' | 'Z7' | 'Z8' | 'Z9' | 'ZC' | 'ZE' | 'ZW' | 'ZM';
 
 export type DATPlace = {
   city?: string;
@@ -258,8 +232,8 @@ export type DATQueryCriteria = {
   capacity?: {
     shipment?: {
       fullPartial: string;
-      maximumLengthFeet: number;
-      maximumWeightPounds: number;
+      maximumLengthFeet?: number;
+      maximumWeightPounds?: number;
     };
     truck?: {
       fullPartial: string;
@@ -361,7 +335,7 @@ export type DATAvailability = {
 
 export type DATTripLength = {
   miles: number;
-  method: string;
+  method: 'AIR' | 'ROAD';
 };
 
 export type DATPosterContact = {
@@ -386,6 +360,8 @@ export type DATMatchResponse = {
   matchingAssetInfo: DATMatchingAssetInfo;
   availability: DATAvailability;
   comments: string;
+  originDeadheadMiles: DATTripLength;
+  destinationDeadheadMiles: DATTripLength;
   tripLength: DATTripLength;
   isFromPrivateNetwork: boolean;
   isBookable: boolean;
@@ -400,6 +376,16 @@ export type DATMatchResponse = {
   postingExpiresWhen: string;
   isActive: boolean;
   howTrackable: string[];
+  loadBoardRateInfo: {
+    bookable?: {
+      rateUsd: number;
+      basis: 'FLAT' | 'PER_MILE';
+    };
+    nonBookable?: {
+      rateUsd: number;
+      basis: 'FLAT' | 'PER_MILE';
+    };
+  };
 };
 
 export type DATRetrieveAssetsResponse = {

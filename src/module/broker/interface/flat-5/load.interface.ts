@@ -12,6 +12,7 @@ export type Stop = {
   line2?: string;
   line3?: string;
   city?: string;
+  county?: string;
   state?: string;
   country?: string;
   countryCode?: string;
@@ -29,12 +30,15 @@ export class Load {
   pickupStop: Stop;
   deliveryStop: Stop;
   rate: number;
+  deadheadRate?: number;
   amount: number;
   currency: string;
   distance: number;
   distanceUnit: string;
   duration: number;
   durationUnit: 'seconds' | 'minutes' | 'hours';
+  originDeadhead?: number;
+  destinationDeadhead?: number;
   rawLoad: any;
   metadata?: any;
 }

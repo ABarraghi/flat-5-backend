@@ -174,7 +174,7 @@ export class DatBrokerService {
         headers: {
           Authorization: await this.generateAccessToken()
         },
-        params: new URLSearchParams(input as any)
+        params: new URLSearchParams({ ...input, limit: '50' } as any)
       })
       .pipe(
         catchError(e => {
