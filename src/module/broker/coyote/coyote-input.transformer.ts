@@ -2,6 +2,10 @@ import { CoyoteEquipmentTypes, CoyoteInput } from '@module/broker/interface/coyo
 import { SearchAvailableLoadDto } from '@module/load/validation/search-available-load.dto';
 import { Injectable } from '@nestjs/common';
 import * as dayjs from 'dayjs';
+import * as utc from 'dayjs/plugin/utc';
+import { DISTANCE_UNIT_DEFAULT } from '@module/broker/interface/flat-5/load.interface';
+
+dayjs.extend(utc);
 
 @Injectable()
 export class CoyoteInputTransformer {
@@ -14,17 +18,19 @@ export class CoyoteInputTransformer {
       },
       deadheadRadius: {
         value: Math.round(value.stopPoints[0].radius) ?? 100,
-        unit: value.stopPoints[0].unit ?? 'Kilometers'
+        unit: value.stopPoints[0].unit ?? DISTANCE_UNIT_DEFAULT
       }
     };
     if (value.stopPoints[0].stopDate) {
       input.origin.appointment = {
-        appointmentStartDateTime: dayjs(value.stopPoints[0].stopDate.from).startOf('day').format(),
-        appointmentEndDateTime: dayjs(value.stopPoints[0].stopDate.from).endOf('day').format()
+        appointmentStartDateTime: dayjs.utc(value.stopPoints[0].stopDate.from).startOf('day').format(),
+        appointmentEndDateTime: dayjs.utc(value.stopPoints[0].stopDate.from).endOf('day').format()
+        // appointmentStartDateTime: '2023-11-14T14:00:00-05:00',
+        // appointmentEndDateTime: '2023-11-14T12:00:00-05:00'
       };
 
       if (value.stopPoints[0].stopDate.to) {
-        input.origin.appointment.appointmentEndDateTime = dayjs(value.stopPoints[0].stopDate.to).endOf('day').format();
+        // input.origin.appointment.appointmentEndDateTime = dayjs(value.stopPoints[0].stopDate.to).endOf('day').format();
       }
     }
     if (value.stopPoints[1]) {
@@ -35,7 +41,7 @@ export class CoyoteInputTransformer {
         },
         deadheadRadius: {
           value: Math.round(value.stopPoints[1].radius) ?? 100,
-          unit: value.stopPoints[1].unit ?? 'Kilometers'
+          unit: value.stopPoints[1].unit ?? DISTANCE_UNIT_DEFAULT
         }
       };
 
@@ -54,7 +60,7 @@ export class CoyoteInputTransformer {
     }
     // Todo: need to validate later
     // V/R/F/VR
-    input.equipmentType = (value.equipmentType as CoyoteEquipmentTypes) ?? 'VR';
+    input.equipmentType = (value.equipmentType as CoyoteEquipmentTypes) ?? 'V';
     input.mode = 'TL_LTL';
 
     return input;

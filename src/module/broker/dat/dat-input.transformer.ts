@@ -10,7 +10,7 @@ export class DatInputTransformer {
   createAssetQuery(value: SearchAvailableLoadDto): DATCreateAssetQueryInput {
     const criteria: DATQueryCriteria = {
       lane: {
-        assetType: 'TRUCK',
+        assetType: 'SHIPMENT',
         equipment: {
           types: ['FR', 'VR', 'VF'],
           classes: ['F', 'R', 'V']
@@ -33,8 +33,13 @@ export class DatInputTransformer {
         earliestWhen: dayjs().startOf('day').format(),
         latestWhen: dayjs().endOf('day').format()
       },
-      maxOriginDeadheadMiles: 150,
-      maxDestinationDeadheadMiles: 150
+      maxOriginDeadheadMiles: 150, // max is 450
+      maxDestinationDeadheadMiles: 150, // max is 450
+      capacity: {
+        shipment: {
+          fullPartial: 'FULL'
+        }
+      }
     };
     if (value.stopPoints[0].radius) {
       criteria.maxOriginDeadheadMiles =

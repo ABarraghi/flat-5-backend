@@ -1,15 +1,21 @@
 import { ApiBrokers } from '@module/broker/interface/flat-5/common.interface';
 
+export const DISTANCE_UNIT_DEFAULT = 'Miles';
 export type GeoCoordinates = {
   latitude: number;
   longitude: number;
 };
 
 export type Stop = {
-  address?: any;
+  address?: string;
+  line1?: string;
+  line2?: string;
+  line3?: string;
   city?: string;
+  county?: string;
   state?: string;
   country?: string;
+  countryCode?: string;
   postalCode?: string;
   coordinates?: GeoCoordinates;
   appointment?: {
@@ -18,11 +24,22 @@ export type Stop = {
   };
 };
 
-export class LoadInterface {
+export class Load {
   broker: ApiBrokers;
   loadId: string;
   pickupStop: Stop;
   deliveryStop: Stop;
+  rate: number;
+  deadheadRate?: number;
+  amount: number;
+  currency: string;
+  distance: number;
+  distanceUnit: string;
+  duration: number;
+  durationUnit: 'seconds' | 'minutes' | 'hours';
+  originDeadhead?: number;
+  destinationDeadhead?: number;
+  rawLoad: any;
   metadata?: any;
 }
 

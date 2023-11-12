@@ -15,6 +15,7 @@ import {
   ValidateNested
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { DISTANCE_UNIT_DEFAULT } from '@module/broker/interface/flat-5/load.interface';
 
 export class CoordinateDto {
   @IsLatitude()
@@ -77,7 +78,7 @@ export class StopPointDto {
   radius: number;
 
   @IsOptional()
-  unit: 'Miles' | 'Kilometers' = 'Miles';
+  unit: 'Miles' | 'Kilometers' = DISTANCE_UNIT_DEFAULT;
 }
 
 export class SearchAvailableLoadDto extends BaseSearchDto {

@@ -1,5 +1,5 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { LoadInterface } from '@module/broker/interface/flat-5/load.interface';
+import { Load } from '@module/broker/interface/flat-5/load.interface';
 import {
   TruckStopDeliveryAddressInfo,
   TruckStopDeliveryAddressInfoResponse,
@@ -16,11 +16,11 @@ export class TruckStopOutputTransformer {
     private priceService: PriceService
   ) {}
 
-  async searchAvailableLoads(value: TruckStopLoad[]): Promise<LoadInterface[]> {
-    const loads: LoadInterface[] = [];
+  async searchAvailableLoads(value: TruckStopLoad[]): Promise<Load[]> {
+    const loads: Load[] = [];
     if (!value || !value.length) return loads;
     for (const load of value) {
-      const loadModel = new LoadInterface();
+      const loadModel = new Load();
       loadModel.broker = 'truckStop';
       loadModel.loadId = load.ID.toString();
 
@@ -95,8 +95,6 @@ export class TruckStopOutputTransformer {
     // Todo: getDirection from origin to pickup point, then get distance
     const deadheadMiles = 0; // zero for now
     const amount = this.priceService.getAmount(distance, deadheadMiles);
-    console.log(`Distance: ${distance} miles`);
-    console.log(`Duration: ${durations} minutes`);
     const result: TruckStopDeliveryAddressInfoResponse = {
       originalCoordinates: origin.center,
       originalPlaceName: origin.place_name,

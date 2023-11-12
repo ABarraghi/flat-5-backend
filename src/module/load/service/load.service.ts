@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { SearchAvailableLoadDto } from '@module/load/validation/search-available-load.dto';
 import { ConfigService } from '@nestjs/config';
 import { CoyoteBrokerService } from '@module/broker/coyote/coyote-broker.service';
-import { LoadInterface } from '@module/broker/interface/flat-5/load.interface';
+import { Load } from '@module/broker/interface/flat-5/load.interface';
 import { ApiBrokers } from '@module/broker/interface/flat-5/common.interface';
 import { BookLoadDto } from '@module/load/validation/book-load.dto';
 import { InjectModel } from '@nestjs/mongoose';
@@ -34,16 +34,16 @@ export class LoadService {
     @InjectModel(Booking.name) private bookingModel: Model<Booking>
   ) {}
 
-  async searchAvailableLoads(searchAvailableLoadDto: SearchAvailableLoadDto): Promise<LoadInterface[] | any> {
+  async searchAvailableLoads(searchAvailableLoadDto: SearchAvailableLoadDto): Promise<Load[] | any> {
     if (searchAvailableLoadDto.stopPoints.length > 2) {
       searchAvailableLoadDto.stopPoints = searchAvailableLoadDto.stopPoints.slice(0, 2);
       // just handle only 2 stop points for now
     }
-    const loads: LoadInterface[] = [];
-    if (this.configService.get('broker.coyote.enabled')) {
+    const loads: Load[] = [];
+    if (!this.configService.get('broker.coyote.enabled')) {
       const input = this.coyoteInputTransformer.searchAvailableLoads(searchAvailableLoadDto);
+      console.log(JSON.stringify(input));
       const coyoteLoads = await this.coyoteBrokerService.searchAvailableLoads(input);
-
       loads.push(...this.coyoteOutputTransformer.searchAvailableLoads(coyoteLoads));
     }
     if (this.configService.get('broker.dat.enabled')) {
@@ -53,7 +53,7 @@ export class LoadService {
 
       loads.push(...this.datOutputTransformer.searchAvailableLoads(datMatches));
     }
-    if (this.configService.get('broker.truckStop.enabled')) {
+    if (!this.configService.get('broker.truckStop.enabled')) {
       const input = this.truckStopInputTransformer.searchAvailableLoads(searchAvailableLoadDto) as TruckStopInput;
       if (input.destination && input.origin) {
         const truckStopLoads = await this.truckStopBrokerService.searchMultipleDetailsLoads(input);
@@ -64,7 +64,7 @@ export class LoadService {
     return loads;
   }
 
-  async getLoadDetail(broker: ApiBrokers, loadId: string): Promise<LoadInterface> {
+  async getLoadDetail(broker: ApiBrokers, loadId: string): Promise<Load> {
     switch (broker) {
       case 'coyote':
         if (this.configService.get('broker.coyote.enabled')) {
