@@ -37,21 +37,41 @@ export class TruckStopOutputTransformer {
       loadModel.pickupStop = {
         address: deliveryInfo.originalPlaceName,
         coordinates: {
-          latitude: deliveryInfo?.originalCoordinates?.length > 1 ? deliveryInfo?.originalCoordinates[1] : 0,
-          longitude: deliveryInfo?.originalCoordinates?.length > 1 ? deliveryInfo?.originalCoordinates[0] : 0
+          latitude:
+            deliveryInfo?.originalCoordinates?.length > 1
+              ? deliveryInfo?.originalCoordinates[1]
+              : 0,
+          longitude:
+            deliveryInfo?.originalCoordinates?.length > 1 ? deliveryInfo?.originalCoordinates[0] : 0
         }
       };
       loadModel.deliveryStop = {
         address: deliveryInfo.destinationPlaceName,
         coordinates: {
-          latitude: deliveryInfo?.destinationCoordinates?.length > 1 ? deliveryInfo?.destinationCoordinates[1] : 0,
-          longitude: deliveryInfo?.destinationCoordinates?.length > 1 ? deliveryInfo?.destinationCoordinates[0] : 0
+          latitude:
+            deliveryInfo?.destinationCoordinates?.length > 1
+              ? deliveryInfo?.destinationCoordinates[1]
+              : 0,
+          longitude:
+            deliveryInfo?.destinationCoordinates?.length > 1
+              ? deliveryInfo?.destinationCoordinates[0]
+              : 0
         }
       };
       loadModel.metadata = {
-        estimationDistance: deliveryInfo?.estimationDistance,
-        estimationDurations: deliveryInfo?.estimationDurations,
+        estimationDistance: deliveryInfo?.estimationDistance
+          ? deliveryInfo?.estimationDistance.toFixed(2)
+          : 0,
+        estimationDurations: deliveryInfo?.estimationDurations
+          ? deliveryInfo?.estimationDurations.toFixed(2)
+          : 0,
         estimationAmount: deliveryInfo?.estimationAmount
+          ? deliveryInfo?.estimationAmount.toFixed(2)
+          : 0,
+        email: load.TruckCompanyEmail || '',
+        fax: load.TruckCompanyFax || '',
+        phone: load.TruckCompanyPhone || '',
+        name: load.TruckCompanyName || ''
       };
       loads.push(loadModel);
     }
@@ -59,8 +79,14 @@ export class TruckStopOutputTransformer {
     return loads;
   }
 
-  async calculateInfo(input: TruckStopDeliveryAddressInfo): Promise<TruckStopDeliveryAddressInfoResponse> {
-    const origin = await this.mapboxService.searchAddress(input.originCity, input.originState, input.originCountry);
+  async calculateInfo(
+    input: TruckStopDeliveryAddressInfo
+  ): Promise<TruckStopDeliveryAddressInfoResponse> {
+    const origin = await this.mapboxService.searchAddress(
+      input.originCity,
+      input.originState,
+      input.originCountry
+    );
     const destination = await this.mapboxService.searchAddress(
       input.destinationCity,
       input.destinationState,
@@ -81,6 +107,17 @@ export class TruckStopOutputTransformer {
     const directionsRequest = {
       waypoints
     };
+
+    // return {
+    //   originalCoordinates: origin.center,
+    //   originalPlaceName: origin.place_name,
+    //   destinationCoordinates: destination.center,
+    //   destinationPlaceName: destination.place_name,
+    //   estimationDistance: 0,
+    //   estimationDurations: 0,
+    //   estimationAmount: 0
+    // };
+
     let response;
     try {
       response = await this.mapboxService.directionsService.getDirections(directionsRequest).send();
