@@ -59,9 +59,13 @@ export class LoadService {
       const input = this.truckStopInputTransformer.searchAvailableLoads(
         searchAvailableLoadDto
       ) as TruckStopInput;
-      if (input.destination && input.origin) {
+      if (input.destination && input.origin && input.equipmentType) {
         const truckStopLoads = await this.truckStopBrokerService.searchMultipleDetailsLoads(input);
-        loads.push(...(await this.truckStopOutputTransformer.searchAvailableLoads(truckStopLoads)));
+        if (truckStopLoads.length > 0) {
+          loads.push(
+            ...(await this.truckStopOutputTransformer.searchAvailableLoads(truckStopLoads))
+          );
+        }
       }
     }
 

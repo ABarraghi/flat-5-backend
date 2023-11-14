@@ -130,7 +130,7 @@ export class TruckStopOutputTransformer {
     const durations = route.duration / 60; // (minutes)
     // deadheadMiles is the distance from the origin to the pickup point (no load)
     // Todo: getDirection from origin to pickup point, then get distance
-    const deadheadMiles = 0; // zero for now
+    const deadheadMiles = 0;
     const amount = this.priceService.getAmount(distance, deadheadMiles);
     const result: TruckStopDeliveryAddressInfoResponse = {
       originalCoordinates: origin.center,

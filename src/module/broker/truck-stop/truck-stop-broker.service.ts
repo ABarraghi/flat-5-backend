@@ -159,12 +159,14 @@ export class TruckStopBrokerService {
             `[TruckStop] Search Multiple Details Available Loads got error`,
             err.response?.data ?? err
           );
-          throw new BadRequestException('TS002');
+
+          return [];
+          // throw new BadRequestException('TS002');
         })
       );
     const res = await firstValueFrom(request);
     const jsonResponses: any[] =
-      (await new Promise((resolve, reject) => {
+      (await new Promise(resolve => {
         this.parser.parseString(res.data, function (error, result) {
           const response =
             result.Envelope.Body.GetMultipleLoadDetailResultsResponse
@@ -172,10 +174,11 @@ export class TruckStopBrokerService {
           if (error || response.Errors.Error) {
             const errorMessage = response.Errors.Error.ErrorMessage;
             Logging.error(
-              `[TruckStop] Search Multiple Details Available Loads got error`,
-              error ?? errorMessage
+              `[TruckStop] Search Multiple Details Available Loads got error: ${errorMessage}`,
+              errorMessage ?? error
             );
-            reject(errorMessage);
+
+            resolve([]);
           }
           let searchItems: any = response.DetailResults.MultipleLoadDetailResult as [];
           if (
