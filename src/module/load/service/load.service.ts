@@ -34,7 +34,9 @@ export class LoadService {
     @InjectModel(Booking.name) private bookingModel: Model<Booking>
   ) {}
 
-  async searchAvailableLoads(searchAvailableLoadDto: SearchAvailableLoadDto): Promise<Load[] | any> {
+  async searchAvailableLoads(
+    searchAvailableLoadDto: SearchAvailableLoadDto
+  ): Promise<Load[] | any> {
     if (searchAvailableLoadDto.stopPoints.length > 2) {
       searchAvailableLoadDto.stopPoints = searchAvailableLoadDto.stopPoints.slice(0, 2);
       // just handle only 2 stop points for now
@@ -54,10 +56,16 @@ export class LoadService {
       loads.push(...this.datOutputTransformer.searchAvailableLoads(datMatches));
     }
     if (!this.configService.get('broker.truckStop.enabled')) {
-      const input = this.truckStopInputTransformer.searchAvailableLoads(searchAvailableLoadDto) as TruckStopInput;
-      if (input.destination && input.origin) {
+      const input = this.truckStopInputTransformer.searchAvailableLoads(
+        searchAvailableLoadDto
+      ) as TruckStopInput;
+      if (input.destination && input.origin && input.equipmentType) {
         const truckStopLoads = await this.truckStopBrokerService.searchMultipleDetailsLoads(input);
-        loads.push(...(await this.truckStopOutputTransformer.searchAvailableLoads(truckStopLoads)));
+        if (truckStopLoads.length > 0) {
+          loads.push(
+            ...(await this.truckStopOutputTransformer.searchAvailableLoads(truckStopLoads))
+          );
+        }
       }
     }
 

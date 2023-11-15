@@ -8,24 +8,47 @@ import * as dayjs from 'dayjs';
 
 @Injectable()
 export class TruckStopInputTransformer {
+  EQUIPMENT_TYPES = {
+    dry_van: 'V',
+    reefer: 'R',
+    flatbed: 'F',
+    dry_van_or_reefer: 'VR',
+    flat_or_van: 'FV'
+  };
   searchAvailableLoads(value: SearchAvailableLoadDto): TruckStopInput {
     const input = new TruckStopInput();
+    let originLatitude = 0;
+    let originLongitude = 0;
+    if (value.stopPoints[0].location.coordinate.latitude) {
+      originLatitude = Math.floor(value.stopPoints[0].location.coordinate.latitude * 100);
+    }
+    if (value.stopPoints[0].location.coordinate.longitude) {
+      originLongitude = Math.floor(value.stopPoints[0].location.coordinate.longitude * 100);
+    }
     input.origin = {
-      city: value.stopPoints[0].location.city,
-      state: value.stopPoints[0].location.state,
-      country: value.stopPoints[0].location.country,
-      range: value.stopPoints[0].radius ?? 25,
-      latitude: value.stopPoints[0].location.coordinate.latitude,
-      longitude: value.stopPoints[0].location.coordinate.longitude
+      city: value.stopPoints[0].location.city || '',
+      state: value.stopPoints[0].location.state || '',
+      country: value.stopPoints[0].location.country || '',
+      range: value.stopPoints[0].radius || 25,
+      latitude: originLatitude,
+      longitude: originLongitude
     };
     if (value.stopPoints[1]) {
+      let destinationLatitude = 0;
+      let destinationLongitude = 0;
+      if (value.stopPoints[1].location?.coordinate?.latitude) {
+        destinationLatitude = Math.floor(value.stopPoints[1].location.coordinate.latitude * 100);
+      }
+      if (value.stopPoints[1].location?.coordinate?.longitude) {
+        destinationLongitude = Math.floor(value.stopPoints[1].location.coordinate.longitude * 100);
+      }
       input.destination = {
-        city: value.stopPoints[1].location.city,
-        state: value.stopPoints[1].location.state,
-        country: value.stopPoints[1].location.country,
-        range: value.stopPoints[1].radius ?? 25,
-        latitude: value.stopPoints[1].location.coordinate.latitude,
-        longitude: value.stopPoints[1].location.coordinate.longitude
+        city: value.stopPoints[1].location.city || '',
+        state: value.stopPoints[1].location.state || '',
+        country: value.stopPoints[1].location.country || '',
+        range: value.stopPoints[1].radius || 25,
+        latitude: destinationLatitude,
+        longitude: destinationLongitude
       };
     }
 
@@ -48,8 +71,9 @@ export class TruckStopInputTransformer {
       pickupDates.push(fromDate);
       pickupDates.push(toDate);
     }
-    input.equipmentType = (value.equipmentType as TruckStopEquipmentTypes) ?? 'VR';
-    input.equipmentType = 'VR';
+    // input.equipmentType = (value.equipmentType as TruckStopEquipmentTypes) ?? 'VR';
+    input.equipmentType =
+      (this.EQUIPMENT_TYPES[value.equipmentType] as TruckStopEquipmentTypes) ?? 'VR';
     input.loadType = 'Full';
     if (pickupDates.length > 0) {
       input.pickupDates = pickupDates;
