@@ -96,7 +96,7 @@ export class DatOutputTransformer {
   }
 
   buildAddress(location: DATPlace): string {
-    return `${location.city}, ${location.county}, ${location.stateProv} ${location.postalCode}`
+    return `${location.city ?? ''}, ${location.county ?? ''}, ${location.stateProv ?? ''} ${location.postalCode ?? ''}`
       .replace(/ {2}/g, ' ')
       .trim();
   }
