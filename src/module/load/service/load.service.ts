@@ -18,6 +18,7 @@ import { TruckStopInput } from '@module/broker/interface/truck-stop/truckt-stop-
 import { TruckStopOutputTransformer } from '@module/broker/truck-stop/truck-stop-output.transformer';
 import { TruckStopInputTransformer } from '@module/broker/truck-stop/truck-stop-input.transformer';
 import { Logging } from '@core/logger/logging.service';
+import { Loc } from '@core/util/loc';
 
 @Injectable()
 export class LoadService {
@@ -66,6 +67,26 @@ export class LoadService {
         loads: [load],
         differInfo: null // for now
       };
+
+      const distance1 = Loc.distance(
+        load.pickupStop.coordinates,
+        searchAvailableLoadDto.stopPoints[0].location.coordinate
+      );
+      const distance2 = Loc.distance(
+        load.deliveryStop.coordinates,
+        searchAvailableLoadDto.stopPoints[1].location.coordinate
+      );
+
+      // Todo: Need to compare unit, for now, just use miles
+      if (
+        distance1 < searchAvailableLoadDto.stopPoints[0].radius &&
+        distance2 < searchAvailableLoadDto.stopPoints[1].radius
+      ) {
+        routeInfo.type = 'standard';
+      } else {
+        routeInfo.type = 'enRoute';
+      }
+
       searchAvailableLoadsResponse.routes.push(routeInfo);
     });
 
