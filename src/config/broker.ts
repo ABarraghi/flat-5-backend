@@ -20,8 +20,10 @@ export default registerAs('broker', () => ({
   truckStop: {
     enabled: process.env.TRUCK_STOP_ENABLED !== 'false',
     urlWebServices:
-      process.env.TRUCK_STOP_URL_WEB_SERVICES || 'http://testws.truckstop.com:8080/V13/Searching/LoadSearch.svc',
-    urlSoapAction: process.env.TRUCK_STOP_URL_SOAP_ACTION || 'http://webservices.truckstop.com/v12/ILoadSearch',
+      process.env.TRUCK_STOP_URL_WEB_SERVICES ||
+      'http://testws.truckstop.com:8080/V13/Searching/LoadSearch.svc',
+    urlSoapAction:
+      process.env.TRUCK_STOP_URL_SOAP_ACTION || 'http://webservices.truckstop.com/v12/ILoadSearch',
     email: process.env.TRUCK_STOP_EMAIL || 'scott@noerr-inc.com',
     userName: process.env.TRUCK_STOP_USERNAME || 'NoerrWS',
     // password: process.env.TRUCK_STOP_PASSWORD || 'Developer234!',
