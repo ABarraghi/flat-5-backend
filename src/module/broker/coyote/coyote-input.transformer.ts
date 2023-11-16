@@ -9,6 +9,14 @@ dayjs.extend(utc);
 
 @Injectable()
 export class CoyoteInputTransformer {
+  EQUIPMENT_TYPES = {
+    dry_van: 'V',
+    reefer: 'R',
+    flatbed: 'F',
+    dry_van_or_reefer: 'VR',
+    flat_or_van: 'V'
+  };
+
   searchAvailableLoads(value: SearchAvailableLoadDto): CoyoteInput {
     const input = new CoyoteInput();
     input.origin = {
@@ -58,9 +66,8 @@ export class CoyoteInputTransformer {
         }
       }
     }
-    // Todo: need to validate later
     // V/R/F/VR
-    input.equipmentType = (value.equipmentType as CoyoteEquipmentTypes) ?? 'V';
+    input.equipmentType = this.EQUIPMENT_TYPES[value.equipmentType] as CoyoteEquipmentTypes;
     input.mode = 'TL_LTL';
 
     return input;

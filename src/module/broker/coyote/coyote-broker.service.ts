@@ -75,6 +75,7 @@ export class CoyoteBrokerService {
       .pipe(
         catchError(e => {
           Logging.error('[Coyote Service] Search Available Loads got error', e);
+          console.log(e.response.data);
           throw new BadRequestException('CYT002');
         })
       );

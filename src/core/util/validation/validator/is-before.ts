@@ -7,6 +7,6 @@ export class IsBefore implements ValidatorConstraintInterface {
   }
 
   defaultMessage(args: ValidationArguments) {
-    return `"${args.property}" must be before "${args.constraints[0]}"`;
+    return `'${args.property}' must be before '${args.constraints[0]}'`;
   }
 }

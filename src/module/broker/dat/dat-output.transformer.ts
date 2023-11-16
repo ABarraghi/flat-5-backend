@@ -82,6 +82,12 @@ export class DatOutputTransformer {
 
         // Todo: need to re-calculate duration by business logic
         loadModel.duration = match.tripLength.miles / 60;
+
+        loadModel.shipperInfo = {
+          name: match.posterInfo.companyName,
+          email: match.posterInfo.contact.email,
+          phone: match.posterInfo.contact.phone
+        };
         loads.push(loadModel);
       }
     });
@@ -90,7 +96,7 @@ export class DatOutputTransformer {
   }
 
   buildAddress(location: DATPlace): string {
-    return `${location.city}, ${location.county}, ${location.stateProv} ${location.postalCode}`
+    return `${location.city ?? ''}, ${location.county ?? ''}, ${location.stateProv ?? ''} ${location.postalCode ?? ''}`
       .replace(/ {2}/g, ' ')
       .trim();
   }

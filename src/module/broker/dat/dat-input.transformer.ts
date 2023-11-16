@@ -7,6 +7,24 @@ import * as dayjs from 'dayjs';
 
 @Injectable()
 export class DatInputTransformer {
+  EQUIPMENT_TYPES = {
+    dry_van: {
+      classes: ['V']
+    },
+    reefer: {
+      classes: ['R']
+    },
+    flatbed: {
+      classes: ['F']
+    },
+    dry_van_or_reefer: {
+      types: ['VR']
+    },
+    flat_or_van: {
+      types: ['VF']
+    }
+  };
+
   createAssetQuery(value: SearchAvailableLoadDto): DATCreateAssetQueryInput {
     const criteria: DATQueryCriteria = {
       lane: {
@@ -74,6 +92,10 @@ export class DatInputTransformer {
             ? value.stopPoints[1].radius
             : Loc.kilometersToMiles(value.stopPoints[1].radius);
       }
+    }
+
+    if (value.equipmentType) {
+      criteria.lane.equipment = this.EQUIPMENT_TYPES[value.equipmentType];
     }
     const input: DATCreateAssetQueryInput = {
       criteria

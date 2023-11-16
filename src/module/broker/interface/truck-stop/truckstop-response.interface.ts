@@ -105,3 +105,27 @@ export type TruckStopSearchLoadResponse = {
 };
 
 export type TruckStopLoadDetailResponse = TruckStopLoad;
+
+export type TruckStopGetMultipleLoadDetailResultsResponse = {
+  Envelope: {
+    'xmlns:s': string;
+    Body: {
+      GetMultipleLoadDetailResultsResponse: {
+        xmlns: string;
+        GetMultipleLoadDetailResultsResult: {
+          'xmlns:a': string;
+          'xmlns:i': string;
+          Errors: {
+            xmlns: string;
+            Error: {
+              ErrorMessage: string;
+            };
+          };
+          DetailResults: {
+            MultipleLoadDetailResult: TruckStopLoad | TruckStopLoad[];
+          };
+        };
+      };
+    };
+  };
+};

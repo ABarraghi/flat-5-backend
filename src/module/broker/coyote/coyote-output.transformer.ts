@@ -100,16 +100,10 @@ export class CoyoteOutputTransformer {
   }
 
   buildAddress(address: CoyoteAddress): string {
-    return (
-      address.line1 +
-      ' ' +
-      address.line2 +
-      address.cityName +
-      ', ' +
-      address.stateProvinceCode +
-      ' ' +
-      address.postalCode
-    )
+    return `
+      ${address.line1 ?? ''} ${address.line2 ?? ''} ${address.cityName ?? ''} ${address.stateProvinceCode ?? ''} ${
+        address.postalCode ?? ''
+      }`
       .replace(/ {2}/g, ' ')
       .trim();
   }

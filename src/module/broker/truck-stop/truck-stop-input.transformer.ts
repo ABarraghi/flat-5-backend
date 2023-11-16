@@ -15,6 +15,7 @@ export class TruckStopInputTransformer {
     dry_van_or_reefer: 'VR',
     flat_or_van: 'FV'
   };
+
   searchAvailableLoads(value: SearchAvailableLoadDto): TruckStopInput {
     const input = new TruckStopInput();
     let originLatitude = 0;
@@ -72,8 +73,7 @@ export class TruckStopInputTransformer {
       pickupDates.push(toDate);
     }
     // input.equipmentType = (value.equipmentType as TruckStopEquipmentTypes) ?? 'VR';
-    input.equipmentType =
-      (this.EQUIPMENT_TYPES[value.equipmentType] as TruckStopEquipmentTypes) ?? 'VR';
+    input.equipmentType = (this.EQUIPMENT_TYPES[value.equipmentType] as TruckStopEquipmentTypes) ?? 'VR';
     input.loadType = 'Full';
     if (pickupDates.length > 0) {
       input.pickupDates = pickupDates;

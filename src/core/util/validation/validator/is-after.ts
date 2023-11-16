@@ -7,6 +7,6 @@ export class IsAfter implements ValidatorConstraintInterface {
   }
 
   defaultMessage(args: ValidationArguments) {
-    return `"${args.property}" must be after "${args.constraints[0]}"`;
+    return `'${args.property}' must be after '${args.constraints[0]}'`;
   }
 }

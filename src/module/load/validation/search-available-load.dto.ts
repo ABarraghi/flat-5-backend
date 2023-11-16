@@ -12,10 +12,14 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  Validate,
   ValidateNested
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { DISTANCE_UNIT_DEFAULT } from '@module/broker/interface/flat-5/load.interface';
+import { IsAfterNow } from '@core/util/validation/validator/is-after-now';
+import { IsBefore } from '@core/util/validation/validator/is-before';
+import { IsAfter } from '@core/util/validation/validator/is-after';
 
 export class CoordinateDto {
   @IsLatitude()
@@ -55,11 +59,15 @@ export class StopDate {
   @IsString()
   @IsISO8601()
   @IsDefined()
+  @Validate(IsAfterNow)
+  @Validate(IsBefore, ['to'])
   from: string;
 
   @IsOptional()
   @IsString()
   @IsISO8601()
+  @Validate(IsAfterNow)
+  @Validate(IsAfter, ['from'])
   to: string;
 }
 
@@ -94,6 +102,7 @@ export class SearchAvailableLoadDto extends BaseSearchDto {
   type: 'standard' | 'enRoute' = 'standard';
 
   @IsOptional()
+  @IsIn(['dry_van', 'reefer', 'flatbed', 'dry_van_or_reefer', 'flat_or_van'])
   equipmentType: string;
 
   @IsOptional()
