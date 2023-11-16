@@ -68,13 +68,11 @@ export class LoadService {
         differInfo: null // for now
       };
 
-      const distance1 = Loc.distance(
-        load.pickupStop.coordinates,
-        searchAvailableLoadDto.stopPoints[0].location.coordinate
+      const distance1 = Loc.kilometersToMiles(
+        Loc.distance(load.pickupStop.coordinates, searchAvailableLoadDto.stopPoints[0].location.coordinate)
       );
-      const distance2 = Loc.distance(
-        load.deliveryStop.coordinates,
-        searchAvailableLoadDto.stopPoints[1].location.coordinate
+      const distance2 = Loc.kilometersToMiles(
+        Loc.distance(load.deliveryStop.coordinates, searchAvailableLoadDto.stopPoints[1].location.coordinate)
       );
 
       // Todo: Need to compare unit, for now, just use miles
