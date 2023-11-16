@@ -41,6 +41,18 @@ export class Load {
   destinationDeadhead?: number;
   rawLoad: any;
   metadata?: any;
+  brokerInfo: {
+    broker: string;
+    email?: string;
+    phone?: string;
+    fax?: string;
+  };
+  shipperInfo: {
+    name?: string;
+    email?: string;
+    phone?: string;
+    fax?: string;
+  };
 }
 
 export class BookingLoad {
@@ -55,4 +67,38 @@ export class BookingLoad {
   loadId: string;
   carrierId: string;
   broker: string;
+}
+
+export class RouteInfo {
+  distance?: number;
+  distanceUnit?: string;
+  duration?: number;
+  durationUnit?: string;
+  amount?: number;
+  currency?: string;
+  description?: string;
+  returnAt?: string;
+  deadhead?: number;
+  directions?: string;
+  type: 'standard' | 'enRoute' | 'routeMyTrucks';
+  differInfo?: {
+    distance?: number;
+    duration?: number;
+    distanceUnit?: string;
+    durationUnit?: string;
+    amount?: number;
+    currency?: string;
+    description?: string;
+    returnAt?: string;
+    deadhead?: number;
+    deadheadUnit?: string;
+    directions?: string;
+    brokers?: string[];
+  };
+  loads?: Load[];
+}
+
+export class SearchAvailableLoadsResponse {
+  routes?: RouteInfo[];
+  metadata?: any;
 }

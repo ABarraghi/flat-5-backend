@@ -82,6 +82,12 @@ export class DatOutputTransformer {
 
         // Todo: need to re-calculate duration by business logic
         loadModel.duration = match.tripLength.miles / 60;
+
+        loadModel.shipperInfo = {
+          name: match.posterInfo.companyName,
+          email: match.posterInfo.contact.email,
+          phone: match.posterInfo.contact.phone
+        };
         loads.push(loadModel);
       }
     });

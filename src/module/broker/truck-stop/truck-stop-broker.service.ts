@@ -4,7 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { catchError, firstValueFrom } from 'rxjs';
 import { Logging } from '@core/logger/logging.service';
 import { TruckStopInput } from '@module/broker/interface/truck-stop/truckt-stop-input.interface';
-import { TruckStopLoad } from '@module/broker/interface/truck-stop/truck-stop-output.interface';
+import { TruckStopLoad } from '@module/broker/interface/truck-stop/truckstop-response.interface';
 import * as xml2js from 'xml2js';
 
 @Injectable()
@@ -40,9 +40,7 @@ export class TruckStopBrokerService {
     let filterDestination = '';
     if (input.pickupDates?.length > 0) {
       input.pickupDates.forEach(pickupDate => {
-        filterPickupDate += `<arr:dateTime>${
-          pickupDate ? pickupDate : '0001-01-01'
-        }</arr:dateTime>\n`;
+        filterPickupDate += `<arr:dateTime>${pickupDate ? pickupDate : '0001-01-01'}</arr:dateTime>\n`;
       });
     }
 
@@ -125,27 +123,24 @@ export class TruckStopBrokerService {
         })
       );
     const res = await firstValueFrom(request);
-    const result: any[] =
-      (await new Promise((resolve, reject) => {
-        this.parser.parseString(res.data, function (err, result) {
-          const response =
-            result.Envelope.Body.GetLoadSearchResultsResponse.GetLoadSearchResultsResult;
-          if (err || response.Errors?.Error) {
-            const errorMessage = response.Errors?.Error.ErrorMessage;
-            Logging.error(`[TruckStop] Search Available Loads got error`, err ?? errorMessage);
-            reject(errorMessage);
-          }
-          const searchItems = response.SearchResults.LoadSearchItem;
-          resolve(searchItems);
-        });
-      })) ?? [];
+    const result: any[] = await new Promise((resolve, reject) => {
+      this.parser.parseString(res.data, function (err, result) {
+        const response = result.Envelope.Body.GetLoadSearchResultsResponse.GetLoadSearchResultsResult;
+        if (err || response.Errors?.Error) {
+          const errorMessage = response.Errors?.Error.ErrorMessage;
+          Logging.error(`[TruckStop] Search Available Loads got error`, err ?? errorMessage);
+          reject(errorMessage);
+        }
+        const searchItems = response.SearchResults.LoadSearchItem;
+        resolve(searchItems);
+      });
+    });
 
     return result;
   }
 
   async searchMultipleDetailsLoads(input: TruckStopInput): Promise<TruckStopLoad[]> {
     const xmlStringRequest = this.generateSearchRequest(input, 'GetMultipleLoadDetailResults');
-    console.log('xmlStringRequest: ', xmlStringRequest);
     const request = this.httpService
       .post(this.truckStopConfig.urlWebServices, xmlStringRequest, {
         headers: {
@@ -155,43 +150,27 @@ export class TruckStopBrokerService {
       })
       .pipe(
         catchError(err => {
-          Logging.error(
-            `[TruckStop] Search Multiple Details Available Loads got error`,
-            err.response?.data ?? err
-          );
-
-          return [];
-          // throw new BadRequestException('TS002');
+          Logging.error(`[TruckStop] Search Multiple Details Available Loads got error`, err.response?.data ?? err);
+          throw new BadRequestException('TS002');
         })
       );
     const res = await firstValueFrom(request);
-    const jsonResponses: any[] =
-      (await new Promise(resolve => {
-        this.parser.parseString(res.data, function (error, result) {
-          const response =
-            result.Envelope.Body.GetMultipleLoadDetailResultsResponse
-              .GetMultipleLoadDetailResultsResult;
-          if (error || response.Errors.Error) {
-            const errorMessage = response.Errors.Error.ErrorMessage;
-            Logging.error(
-              `[TruckStop] Search Multiple Details Available Loads got error: ${errorMessage}`,
-              errorMessage ?? error
-            );
+    try {
+      const jsonResponses = await this.parser.parseStringPromise(res.data);
+      const multipleLoadDetail =
+        jsonResponses.Envelope.Body.GetMultipleLoadDetailResultsResponse.GetMultipleLoadDetailResultsResult;
+      if (multipleLoadDetail.Errors?.Error?.ErrorMessage) {
+        throw new Error(multipleLoadDetail.Errors.Error);
+      }
+      let truckStopLoad = multipleLoadDetail.DetailResults.MultipleLoadDetailResult;
+      if (!Array.isArray(truckStopLoad)) {
+        truckStopLoad = [truckStopLoad];
+      }
 
-            resolve([]);
-          }
-          let searchItems: any = response.DetailResults.MultipleLoadDetailResult as [];
-          if (
-            response.DetailResults.MultipleLoadDetailResult &&
-            !response.DetailResults.MultipleLoadDetailResult.length
-          ) {
-            searchItems = [response.DetailResults.MultipleLoadDetailResult];
-          }
-
-          resolve(searchItems);
-        });
-      })) ?? [];
-
-    return jsonResponses;
+      return truckStopLoad;
+    } catch (e) {
+      Logging.error(`[TruckStop] Search Multiple Details Available Loads got error`, e);
+      throw new BadRequestException('TS002');
+    }
   }
 }

@@ -339,6 +339,7 @@ export type DATTripLength = {
 };
 
 export type DATPosterContact = {
+  email?: string;
   phone: string;
 };
 

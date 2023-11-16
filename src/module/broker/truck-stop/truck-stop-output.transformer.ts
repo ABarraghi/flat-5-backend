@@ -4,7 +4,7 @@ import {
   TruckStopDeliveryAddressInfo,
   TruckStopDeliveryAddressInfoResponse,
   TruckStopLoad
-} from '@module/broker/interface/truck-stop/truck-stop-output.interface';
+} from '@module/broker/interface/truck-stop/truckstop-response.interface';
 import { Loc } from '@core/util/loc';
 import { MapboxService } from '@module/broker/service/mapbox.service';
 import { PriceService } from '@module/broker/service/price.service';
@@ -38,57 +38,58 @@ export class TruckStopOutputTransformer {
       loadModel.pickupStop = {
         address: deliveryInfo.originalPlaceName,
         coordinates: {
-          latitude:
-            deliveryInfo?.originalCoordinates?.length > 1
-              ? deliveryInfo?.originalCoordinates[1]
-              : 0,
-          longitude:
-            deliveryInfo?.originalCoordinates?.length > 1 ? deliveryInfo?.originalCoordinates[0] : 0
+          latitude: deliveryInfo?.originalCoordinates?.length > 1 ? deliveryInfo?.originalCoordinates[1] : 0,
+          longitude: deliveryInfo?.originalCoordinates?.length > 1 ? deliveryInfo?.originalCoordinates[0] : 0
         }
+        // city: pickupStop.city,
+        // state: pickupStop.stateProv,
+        // county: pickupStop.county,
+        // postalCode: pickupStop.postalCode,
+        // appointment: {
+        //   startTime: match.availability.earliestWhen,
+        //   endTime: match.availability.latestWhen
+        // }
       };
       loadModel.deliveryStop = {
         address: deliveryInfo.destinationPlaceName,
         coordinates: {
-          latitude:
-            deliveryInfo?.destinationCoordinates?.length > 1
-              ? deliveryInfo?.destinationCoordinates[1]
-              : 0,
-          longitude:
-            deliveryInfo?.destinationCoordinates?.length > 1
-              ? deliveryInfo?.destinationCoordinates[0]
-              : 0
+          latitude: deliveryInfo?.destinationCoordinates?.length > 1 ? deliveryInfo?.destinationCoordinates[1] : 0,
+          longitude: deliveryInfo?.destinationCoordinates?.length > 1 ? deliveryInfo?.destinationCoordinates[0] : 0
         }
+        // city: pickupStop.city,
+        // state: pickupStop.stateProv,
+        // county: pickupStop.county,
+        // postalCode: pickupStop.postalCode,
+        // appointment: {
+        //   startTime: match.availability.earliestWhen,
+        //   endTime: match.availability.latestWhen
+        // }
       };
-      loadModel.metadata = {
-        estimationDistance: deliveryInfo?.estimationDistance
-          ? deliveryInfo?.estimationDistance.toFixed(2)
-          : 0,
-        estimationDurations: deliveryInfo?.estimationDurations
-          ? deliveryInfo?.estimationDurations.toFixed(2)
-          : 0,
-        estimationAmount: deliveryInfo?.estimationAmount
-          ? deliveryInfo?.estimationAmount.toFixed(2)
-          : 0,
-        email: load.TruckCompanyEmail || '',
-        fax: load.TruckCompanyFax || '',
-        phone: load.TruckCompanyPhone || '',
-        name: load.TruckCompanyName || ''
+      // loadModel.originDeadhead = match.originDeadheadMiles.miles;
+      // loadModel.destinationDeadhead = match.destinationDeadheadMiles.miles;
+      loadModel.distance = deliveryInfo?.estimationDistance ? +deliveryInfo?.estimationDistance.toFixed(2) : 0;
+      loadModel.distanceUnit = 'Miles';
+      loadModel.duration = deliveryInfo?.estimationDurations ? +deliveryInfo?.estimationDurations.toFixed(2) : 0;
+      loadModel.amount = deliveryInfo?.estimationAmount ? +deliveryInfo?.estimationAmount.toFixed(2) : 0;
+      loadModel.deadheadRate = this.priceService.deadHeadRate;
+      loadModel.rate = this.priceService.loadedKilometerRate;
+      loadModel.shipperInfo = {
+        email: load.TruckCompanyEmail,
+        fax: load.TruckCompanyFax,
+        phone: load.TruckCompanyPhone,
+        name: load.TruckCompanyName
       };
+      loadModel.rawLoad = load;
+
       loads.push(loadModel);
     }
 
     return loads;
   }
 
-  async calculateInfo(
-    input: TruckStopDeliveryAddressInfo
-  ): Promise<TruckStopDeliveryAddressInfoResponse> {
+  async calculateInfo(input: TruckStopDeliveryAddressInfo): Promise<TruckStopDeliveryAddressInfoResponse> {
     try {
-      const origin = await this.mapboxService.searchAddress(
-        input.originCity,
-        input.originState,
-        input.originCountry
-      );
+      const origin = await this.mapboxService.searchAddress(input.originCity, input.originState, input.originCountry);
       const destination = await this.mapboxService.searchAddress(
         input.destinationCity,
         input.destinationState,
@@ -110,21 +111,7 @@ export class TruckStopOutputTransformer {
         waypoints
       };
 
-      // return {
-      //   originalCoordinates: origin.center,
-      //   originalPlaceName: origin.place_name,
-      //   destinationCoordinates: destination.center,
-      //   destinationPlaceName: destination.place_name,
-      //   estimationDistance: 0,
-      //   estimationDurations: 0,
-      //   estimationAmount: 0
-      // };
-
-      // let response;
-
-      const response = await this.mapboxService.directionsService
-        .getDirections(directionsRequest)
-        .send();
+      const response = await this.mapboxService.directionsService.getDirections(directionsRequest).send();
       const route = response.body.routes[0];
 
       const distance = Loc.metersToMiles(route.distance); // (miles)
@@ -145,13 +132,8 @@ export class TruckStopOutputTransformer {
 
       return result;
     } catch (err) {
-      Logging.error(
-        `[TruckStop] Search Multiple Details Available Loads got error`,
-        err.response?.data ?? err
-      );
-
-      return null;
-      // throw new InternalServerErrorException(e);
+      Logging.error(`[TruckStop] Search Multiple Details Available Loads got error`, err.response?.data ?? err);
+      throw new InternalServerErrorException(err);
     }
   }
 }
