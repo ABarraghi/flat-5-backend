@@ -22,6 +22,7 @@ export type Stop = {
     startTime?: string;
     endTime?: string;
   };
+  notes?: string;
 };
 
 export class Load {
@@ -39,6 +40,15 @@ export class Load {
   durationUnit: 'seconds' | 'minutes' | 'hours';
   originDeadhead?: number;
   destinationDeadhead?: number;
+  equipmentType: string;
+  length: number;
+  lengthUnit: string;
+  height: number;
+  heightUnit: string;
+  width: number;
+  widthUnit: string;
+  weight: number;
+  weightUnit: string;
   rawLoad: any;
   metadata?: any;
   brokerInfo: {
