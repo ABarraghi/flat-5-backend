@@ -40,15 +40,10 @@ export class TruckStopOutputTransformer {
         coordinates: {
           latitude: deliveryInfo?.originalCoordinates?.length > 1 ? deliveryInfo?.originalCoordinates[1] : 0,
           longitude: deliveryInfo?.originalCoordinates?.length > 1 ? deliveryInfo?.originalCoordinates[0] : 0
+        },
+        appointment: {
+          startTime: load.PickupDate === 'DAILY' ? load.PickupDate : `${load.PickupDate} ${load.PickupTime}`
         }
-        // city: pickupStop.city,
-        // state: pickupStop.stateProv,
-        // county: pickupStop.county,
-        // postalCode: pickupStop.postalCode,
-        // appointment: {
-        //   startTime: match.availability.earliestWhen,
-        //   endTime: match.availability.latestWhen
-        // }
       };
       loadModel.deliveryStop = {
         address: deliveryInfo.destinationPlaceName,
@@ -56,17 +51,7 @@ export class TruckStopOutputTransformer {
           latitude: deliveryInfo?.destinationCoordinates?.length > 1 ? deliveryInfo?.destinationCoordinates[1] : 0,
           longitude: deliveryInfo?.destinationCoordinates?.length > 1 ? deliveryInfo?.destinationCoordinates[0] : 0
         }
-        // city: pickupStop.city,
-        // state: pickupStop.stateProv,
-        // county: pickupStop.county,
-        // postalCode: pickupStop.postalCode,
-        // appointment: {
-        //   startTime: match.availability.earliestWhen,
-        //   endTime: match.availability.latestWhen
-        // }
       };
-      // loadModel.originDeadhead = match.originDeadheadMiles.miles;
-      // loadModel.destinationDeadhead = match.destinationDeadheadMiles.miles;
       loadModel.distance = deliveryInfo?.estimationDistance ? +deliveryInfo?.estimationDistance.toFixed(2) : 0;
       loadModel.distanceUnit = 'Miles';
       loadModel.duration = deliveryInfo?.estimationDurations ? +deliveryInfo?.estimationDurations.toFixed(2) : 0;
@@ -79,6 +64,10 @@ export class TruckStopOutputTransformer {
         phone: load.TruckCompanyPhone,
         name: load.TruckCompanyName
       };
+      loadModel.equipmentType = load.EquipmentTypes.Description;
+      loadModel.weight = load.Weight ? parseFloat(load.Weight) : 0;
+      loadModel.width = load.Width ? parseFloat(load.Width) : 0;
+      loadModel.length = load.Length ? parseFloat(load.Length) : 0;
       loadModel.rawLoad = load;
 
       loads.push(loadModel);

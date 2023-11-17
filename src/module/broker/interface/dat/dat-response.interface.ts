@@ -377,6 +377,8 @@ export type DATMatchResponse = {
   postingExpiresWhen: string;
   isActive: boolean;
   howTrackable: string[];
+  maximumLengthFeet: number;
+  maximumWeightPounds: number;
   loadBoardRateInfo: {
     bookable?: {
       rateUsd: number;

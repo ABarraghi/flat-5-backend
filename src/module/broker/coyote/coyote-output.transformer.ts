@@ -8,6 +8,12 @@ import {
 
 @Injectable()
 export class CoyoteOutputTransformer {
+  EQUIPMENT_TYPES = {
+    V: 'Van',
+    R: 'Reefer',
+    F: 'Flatbed'
+  };
+
   searchAvailableLoads(value: CoyoteSearchLoadResponse): Load[] {
     const loads: Load[] = [];
     if (!value || !value.loads || !value.loads.length) return loads;
@@ -30,7 +36,8 @@ export class CoyoteOutputTransformer {
         appointment: {
           startTime: pickupStop.appointment.appointmentStartDateTimeUtc,
           endTime: pickupStop.appointment.appointmentEndDateTimeUtc
-        }
+        },
+        notes: pickupStop.stopDetails.stopNotes
       };
       const deliveryStop = load.stops.find(stop => stop.stopType === 'Delivery');
       loadModel.deliveryStop = {
@@ -42,7 +49,8 @@ export class CoyoteOutputTransformer {
         appointment: {
           startTime: deliveryStop.appointment.appointmentStartDateTimeUtc,
           endTime: deliveryStop.appointment.appointmentEndDateTimeUtc
-        }
+        },
+        notes: deliveryStop.stopDetails.stopNotes
       };
       loadModel.amount = load.loadDetails.rate.value;
       loadModel.currency = load.loadDetails.rate.currencyType;
@@ -56,6 +64,15 @@ export class CoyoteOutputTransformer {
       loadModel.duration = load.loadDetails.loadDistance.value / 60;
       loadModel.durationUnit = 'minutes';
       loadModel.rawLoad = load;
+      loadModel.equipmentType = this.EQUIPMENT_TYPES[load.loadDetails.equipment.equipmentType];
+      loadModel.length = load.loadDetails.equipment.equipmentLength.value;
+      loadModel.lengthUnit = load.loadDetails.equipment.equipmentLength.unit;
+      loadModel.height = load.loadDetails.equipment.equipmentHeight.value;
+      loadModel.heightUnit = load.loadDetails.equipment.equipmentHeight.unit;
+      loadModel.width = load.loadDetails.equipment.equipmentWidth.value;
+      loadModel.widthUnit = load.loadDetails.equipment.equipmentWidth.unit;
+      loadModel.weight = load.loadDetails.weight.value;
+      loadModel.weightUnit = load.loadDetails.weight.unit;
 
       loads.push(loadModel);
     });

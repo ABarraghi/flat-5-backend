@@ -8,6 +8,12 @@ import { Loc } from '@core/util/loc';
 export class DatOutputTransformer {
   constructor(private readonly priceService: PriceService) {}
 
+  EQUIPMENT_TYPES = {
+    V: 'Van',
+    R: 'Reefer',
+    F: 'Flatbed'
+  };
+
   searchAvailableLoads(value: DATRetrieveAssetsResponse): Load[] {
     const loads: Load[] = [];
     if (!value || !value.matches || !value.matches.length) return loads;
@@ -88,6 +94,11 @@ export class DatOutputTransformer {
           email: match.posterInfo.contact.email,
           phone: match.posterInfo.contact.phone
         };
+        loadModel.equipmentType = this.EQUIPMENT_TYPES[match.matchingAssetInfo.equipmentType];
+        loadModel.length = match.maximumLengthFeet;
+        loadModel.lengthUnit = 'Feet';
+        loadModel.weight = match.maximumWeightPounds;
+        loadModel.weightUnit = 'Pounds';
         loads.push(loadModel);
       }
     });
