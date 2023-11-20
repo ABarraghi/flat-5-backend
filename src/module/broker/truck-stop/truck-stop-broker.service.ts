@@ -163,6 +163,9 @@ export class TruckStopBrokerService {
         throw new Error(multipleLoadDetail.Errors.Error);
       }
       let truckStopLoad = multipleLoadDetail.DetailResults.MultipleLoadDetailResult;
+      if (!truckStopLoad) {
+        return [];
+      }
       if (!Array.isArray(truckStopLoad)) {
         truckStopLoad = [truckStopLoad];
       }

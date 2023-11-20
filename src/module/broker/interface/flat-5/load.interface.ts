@@ -26,6 +26,7 @@ export type Stop = {
 };
 
 export class Load {
+  keyByPoints: string;
   broker: ApiBrokers;
   loadId: string;
   pickupStop: Stop;
@@ -90,7 +91,7 @@ export class RouteInfo {
   returnAt?: string;
   deadhead?: number;
   directions?: string;
-  type: 'standard' | 'enRoute' | 'routeMyTrucks';
+  type: 'standard' | 'enRoute' | 'routeMyTrucks' | 'notValidYet';
   differInfo?: {
     distance?: number;
     duration?: number;

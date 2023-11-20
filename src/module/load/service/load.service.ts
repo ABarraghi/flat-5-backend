@@ -36,11 +36,18 @@ export class LoadService {
     @InjectModel(Booking.name) private bookingModel: Model<Booking>
   ) {}
 
-  async searchAvailableLoads(searchAvailableLoadDto: SearchAvailableLoadDto): Promise<Load[] | any> {
+  async searchAvailableLoadsBetween2Points(searchAvailableLoadDto: SearchAvailableLoadDto): Promise<Load[] | any> {
     if (searchAvailableLoadDto.stopPoints.length > 2) {
       searchAvailableLoadDto.stopPoints = searchAvailableLoadDto.stopPoints.slice(0, 2);
-      // just handle only 2 stop points for now
     }
+    const loadKeyByPoints =
+      searchAvailableLoadDto.stopPoints[0].location.coordinate.latitude.toString() +
+      '_' +
+      searchAvailableLoadDto.stopPoints[0].location.coordinate.longitude.toString() +
+      '_' +
+      searchAvailableLoadDto.stopPoints[1].location.coordinate.latitude.toString() +
+      '_' +
+      searchAvailableLoadDto.stopPoints[1].location.coordinate.longitude.toString();
     const loads: Load[] = [];
     const [coyoteLoads, datLoads, truckStopLoads] = await Promise.all([
       this.searchAvailableLoadCoyote(searchAvailableLoadDto),
@@ -48,6 +55,30 @@ export class LoadService {
       this.searchAvailableLoadTruckStop(searchAvailableLoadDto)
     ]);
     loads.push(...coyoteLoads, ...datLoads, ...truckStopLoads);
+    loads.forEach(load => {
+      load.keyByPoints = loadKeyByPoints;
+    });
+
+    return loads;
+  }
+
+  async searchAvailableLoads(searchAvailableLoadDto: SearchAvailableLoadDto): Promise<Load[] | any> {
+    if (searchAvailableLoadDto.returnHome) {
+      let stopPoints = searchAvailableLoadDto.stopPoints;
+      const reveredStopPoints = [...stopPoints].reverse();
+      stopPoints = [...stopPoints, ...reveredStopPoints];
+      searchAvailableLoadDto.stopPoints = stopPoints;
+    }
+    const loads: Load[] = [];
+    for (let i = 0; i < searchAvailableLoadDto.stopPoints.length - 1; i++) {
+      const stopPoints = [searchAvailableLoadDto.stopPoints[i], searchAvailableLoadDto.stopPoints[i + 1]];
+      loads.push(
+        ...(await this.searchAvailableLoadsBetween2Points({
+          ...searchAvailableLoadDto,
+          stopPoints
+        }))
+      );
+    }
 
     const searchAvailableLoadsResponse = new SearchAvailableLoadsResponse();
     searchAvailableLoadsResponse.routes = [];
@@ -68,11 +99,26 @@ export class LoadService {
         differInfo: null // for now
       };
 
+      const distance = Loc.kilometersToMiles(
+        Loc.distance(
+          searchAvailableLoadDto.stopPoints[0].location.coordinate,
+          searchAvailableLoadDto.stopPoints[1].location.coordinate
+        )
+      );
+
       const distance1 = Loc.kilometersToMiles(
         Loc.distance(load.pickupStop.coordinates, searchAvailableLoadDto.stopPoints[0].location.coordinate)
       );
       const distance2 = Loc.kilometersToMiles(
         Loc.distance(load.deliveryStop.coordinates, searchAvailableLoadDto.stopPoints[1].location.coordinate)
+      );
+
+      const distance3 = Loc.kilometersToMiles(
+        Loc.distance(load.pickupStop.coordinates, searchAvailableLoadDto.stopPoints[1].location.coordinate)
+      );
+
+      const distance4 = Loc.kilometersToMiles(
+        Loc.distance(load.deliveryStop.coordinates, searchAvailableLoadDto.stopPoints[0].location.coordinate)
       );
 
       // Todo: Need to compare unit, for now, just use miles
@@ -82,7 +128,12 @@ export class LoadService {
       ) {
         routeInfo.type = 'standard';
       } else {
-        routeInfo.type = 'enRoute';
+        // Not going in the opposite direction of the destination
+        if (distance3 < distance && distance4 < distance) {
+          routeInfo.type = 'enRoute';
+        } else {
+          routeInfo.type = 'notValidYet';
+        }
       }
 
       searchAvailableLoadsResponse.routes.push(routeInfo);
@@ -99,7 +150,7 @@ export class LoadService {
         const coyoteLoads = await this.coyoteBrokerService.searchAvailableLoads(input);
         loads.push(...this.coyoteOutputTransformer.searchAvailableLoads(coyoteLoads));
       } catch (error) {
-        Logging.error('[Load Service] Search Available Loads got error', error);
+        Logging.error('[Load Service - Coyote] Search Available Loads got error', error);
       }
     }
 
@@ -116,7 +167,7 @@ export class LoadService {
 
         loads.push(...this.datOutputTransformer.searchAvailableLoads(datMatches));
       } catch (error) {
-        Logging.error('[Load Service] Search Available Loads got error', error);
+        Logging.error('[Load Service - DAT] Search Available Loads got error', error);
       }
     }
 
@@ -134,7 +185,7 @@ export class LoadService {
           // return truckStopLoads;
           loads.push(...(await this.truckStopOutputTransformer.searchAvailableLoads(truckStopLoads)));
         } catch (error) {
-          Logging.error('[Load Service] Search Available Loads got error', error);
+          Logging.error('[Load Service - Truckstop] Search Available Loads got error', error);
         }
       }
     }
