@@ -57,6 +57,7 @@ export class LoadService {
     loads.push(...coyoteLoads, ...datLoads, ...truckStopLoads);
     loads.forEach(load => {
       load.keyByPoints = loadKeyByPoints;
+      load.stopPoints = searchAvailableLoadDto.stopPoints;
     });
 
     return loads;
@@ -69,75 +70,76 @@ export class LoadService {
       stopPoints = [...stopPoints, ...reveredStopPoints];
       searchAvailableLoadDto.stopPoints = stopPoints;
     }
-    const loads: Load[] = [];
+    const preMaploads: Load[][] = [];
     for (let i = 0; i < searchAvailableLoadDto.stopPoints.length - 1; i++) {
       const stopPoints = [searchAvailableLoadDto.stopPoints[i], searchAvailableLoadDto.stopPoints[i + 1]];
-      loads.push(
-        ...(await this.searchAvailableLoadsBetween2Points({
+      preMaploads.push(
+        await this.searchAvailableLoadsBetween2Points({
           ...searchAvailableLoadDto,
           stopPoints
-        }))
+        })
       );
     }
 
     const searchAvailableLoadsResponse = new SearchAvailableLoadsResponse();
     searchAvailableLoadsResponse.routes = [];
-    loads.forEach(load => {
+
+    const loadsForRoutes: Load[][] = generateCombinations(preMaploads);
+    for (const loadsForRoute of loadsForRoutes) {
       const routeInfo: RouteInfo = {
-        distance: load.distance,
-        distanceUnit: load.distanceUnit,
-        duration: load.duration,
-        durationUnit: load.durationUnit,
-        amount: load.amount,
-        currency: load.currency,
+        distance: 0,
+        distanceUnit: loadsForRoute[0].distanceUnit,
+        duration: 0,
+        durationUnit: loadsForRoute[0].durationUnit,
+        amount: 0,
+        currency: loadsForRoute[0].currency,
         description: '',
-        returnAt: load.deliveryStop.appointment?.endTime,
-        deadhead: load.originDeadhead + load.destinationDeadhead || 0,
+        returnAt: '',
+        deadhead: 0,
         directions: '',
         type: 'standard',
-        loads: [load],
+        loads: loadsForRoute,
         differInfo: null // for now
       };
+      loadsForRoute.forEach(load => {
+        routeInfo.distance += load.distance;
+        routeInfo.duration += load.duration;
+        routeInfo.amount += load.amount;
+        routeInfo.deadhead += load.originDeadhead + load.destinationDeadhead;
 
-      const distance = Loc.kilometersToMiles(
-        Loc.distance(
-          searchAvailableLoadDto.stopPoints[0].location.coordinate,
-          searchAvailableLoadDto.stopPoints[1].location.coordinate
-        )
-      );
+        const distance = Loc.kilometersToMiles(
+          Loc.distance(load.stopPoints[0].location.coordinate, load.stopPoints[1].location.coordinate)
+        );
 
-      const distance1 = Loc.kilometersToMiles(
-        Loc.distance(load.pickupStop.coordinates, searchAvailableLoadDto.stopPoints[0].location.coordinate)
-      );
-      const distance2 = Loc.kilometersToMiles(
-        Loc.distance(load.deliveryStop.coordinates, searchAvailableLoadDto.stopPoints[1].location.coordinate)
-      );
+        const distance1 = Loc.kilometersToMiles(
+          Loc.distance(load.pickupStop.coordinates, load.stopPoints[0].location.coordinate)
+        );
+        const distance2 = Loc.kilometersToMiles(
+          Loc.distance(load.deliveryStop.coordinates, load.stopPoints[1].location.coordinate)
+        );
 
-      const distance3 = Loc.kilometersToMiles(
-        Loc.distance(load.pickupStop.coordinates, searchAvailableLoadDto.stopPoints[1].location.coordinate)
-      );
+        const distance3 = Loc.kilometersToMiles(
+          Loc.distance(load.pickupStop.coordinates, load.stopPoints[1].location.coordinate)
+        );
 
-      const distance4 = Loc.kilometersToMiles(
-        Loc.distance(load.deliveryStop.coordinates, searchAvailableLoadDto.stopPoints[0].location.coordinate)
-      );
+        const distance4 = Loc.kilometersToMiles(
+          Loc.distance(load.deliveryStop.coordinates, load.stopPoints[0].location.coordinate)
+        );
 
-      // Todo: Need to compare unit, for now, just use miles
-      if (
-        distance1 < searchAvailableLoadDto.stopPoints[0].radius &&
-        distance2 < searchAvailableLoadDto.stopPoints[1].radius
-      ) {
-        routeInfo.type = 'standard';
-      } else {
-        // Not going in the opposite direction of the destination
-        if (distance3 < distance && distance4 < distance) {
-          routeInfo.type = 'enRoute';
+        // Todo: Need to compare unit, for now, just use miles
+        if (distance1 < load.stopPoints[0].radius && distance2 < load.stopPoints[1].radius) {
+          routeInfo.type = 'standard';
         } else {
-          routeInfo.type = 'notValidYet';
+          // Not going in the opposite direction of the destination
+          if (distance3 < distance && distance4 < distance) {
+            routeInfo.type = 'enRoute';
+          } else {
+            routeInfo.type = 'notValidYet';
+          }
         }
-      }
-
+      });
       searchAvailableLoadsResponse.routes.push(routeInfo);
-    });
+    }
 
     return searchAvailableLoadsResponse;
   }
@@ -239,4 +241,26 @@ export class LoadService {
 
     return res;
   }
+}
+
+function generateCombinations(preMaploads: Load[][]): Load[][] {
+  const finalResults: Load[][] = [];
+
+  function generateCombinationHelper(currentCombination: Load[], index: number): void {
+    if (index === preMaploads.length) {
+      finalResults.push([...currentCombination]);
+
+      return;
+    }
+
+    for (const load of preMaploads[index]) {
+      currentCombination.push(load);
+      generateCombinationHelper(currentCombination, index + 1);
+      currentCombination.pop();
+    }
+  }
+
+  generateCombinationHelper([], 0);
+
+  return finalResults;
 }

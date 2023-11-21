@@ -1,4 +1,5 @@
 import { ApiBrokers } from '@module/broker/interface/flat-5/common.interface';
+import { StopPointDto } from '@module/load/validation/search-available-load.dto';
 
 export const DISTANCE_UNIT_DEFAULT = 'Miles';
 export type GeoCoordinates = {
@@ -27,6 +28,7 @@ export type Stop = {
 
 export class Load {
   keyByPoints: string;
+  stopPoints: StopPointDto[];
   broker: ApiBrokers;
   loadId: string;
   pickupStop: Stop;
