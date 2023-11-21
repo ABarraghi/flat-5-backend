@@ -9,8 +9,13 @@ export class LoadController {
   constructor(private readonly loadService: LoadService) {}
 
   @Post('available')
-  searchAvailableLoads(@Body() searchAvailableLoadDto: SearchAvailableLoadDto) {
-    return this.loadService.searchAvailableLoads(searchAvailableLoadDto);
+  searchStandard(@Body() searchAvailableLoadDto: SearchAvailableLoadDto) {
+    return this.loadService.searchStandard(searchAvailableLoadDto);
+  }
+
+  @Post('en-route')
+  searchEnroute(@Body() searchAvailableLoadDto: SearchAvailableLoadDto) {
+    return this.loadService.searchEnRoute(searchAvailableLoadDto);
   }
 
   @Get(':broker/:loadId')

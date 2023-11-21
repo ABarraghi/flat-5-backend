@@ -63,10 +63,12 @@ export class LoadService {
     return loads;
   }
 
-  async searchAvailableLoads(searchAvailableLoadDto: SearchAvailableLoadDto): Promise<Load[] | any> {
+  async searchAvailableLoads(searchAvailableLoadDto: SearchAvailableLoadDto): Promise<Load[][] | any> {
     if (searchAvailableLoadDto.returnHome) {
       let stopPoints = searchAvailableLoadDto.stopPoints;
-      const reveredStopPoints = [...stopPoints].reverse();
+      let reveredStopPoints = [...stopPoints];
+      reveredStopPoints.pop();
+      reveredStopPoints = reveredStopPoints.reverse();
       stopPoints = [...stopPoints, ...reveredStopPoints];
       searchAvailableLoadDto.stopPoints = stopPoints;
     }
@@ -81,11 +83,17 @@ export class LoadService {
       );
     }
 
+    return preMapLoads;
+  }
+
+  async searchStandard(searchAvailableLoadDto: SearchAvailableLoadDto): Promise<SearchAvailableLoadsResponse | any> {
+    const preMapLoads: Load[][] = await this.searchAvailableLoads(searchAvailableLoadDto);
     const searchAvailableLoadsResponse = new SearchAvailableLoadsResponse();
     searchAvailableLoadsResponse.routes = [];
 
     const loadsForRoutes: Load[][] = generateCombinations(preMapLoads);
     for (const loadsForRoute of loadsForRoutes) {
+      if (loadsForRoute.length === 0) continue;
       const routeInfo: RouteInfo = {
         distance: 0,
         distanceUnit: loadsForRoute[0].distanceUnit,
@@ -107,41 +115,92 @@ export class LoadService {
         routeInfo.amount += load.amount;
         routeInfo.deadhead += load.originDeadhead + load.destinationDeadhead;
 
-        const distance = Loc.kilometersToMiles(
-          Loc.distance(load.stopPoints[0].location.coordinate, load.stopPoints[1].location.coordinate)
-        );
-
-        const distance1 = Loc.kilometersToMiles(
-          Loc.distance(load.pickupStop.coordinates, load.stopPoints[0].location.coordinate)
-        );
-        const distance2 = Loc.kilometersToMiles(
-          Loc.distance(load.deliveryStop.coordinates, load.stopPoints[1].location.coordinate)
-        );
-
-        const distance3 = Loc.kilometersToMiles(
-          Loc.distance(load.pickupStop.coordinates, load.stopPoints[1].location.coordinate)
-        );
-
-        const distance4 = Loc.kilometersToMiles(
-          Loc.distance(load.deliveryStop.coordinates, load.stopPoints[0].location.coordinate)
-        );
-
-        // Todo: Need to compare unit, for now, just use miles
-        // if not standard route - by default
-        if (!(distance1 < load.stopPoints[0].radius && distance2 < load.stopPoints[1].radius)) {
-          // => check if enRoute
-          // Not going in the opposite direction of the destination
-          if (distance3 < distance && distance4 < distance) {
-            routeInfo.type = 'enRoute';
-          } else {
-            routeInfo.type = 'notValidYet';
-          }
+        if (this.isEnRouteLoad(load)) {
+          routeInfo.type = 'enRoute';
+        } else if (!this.isStandardLoad(load)) {
+          routeInfo.type = 'notValidYet';
         }
       });
       searchAvailableLoadsResponse.routes.push(routeInfo);
     }
 
     return searchAvailableLoadsResponse;
+  }
+
+  async searchEnRoute(searchAvailableLoadDto: SearchAvailableLoadDto): Promise<SearchAvailableLoadsResponse | any> {
+    searchAvailableLoadDto.stopPoints.forEach(stopPoint => {
+      stopPoint.radius *= 1.5;
+    });
+    const preMapLoads: Load[][] = await this.searchAvailableLoads(searchAvailableLoadDto);
+    const searchAvailableLoadsResponse = new SearchAvailableLoadsResponse();
+    searchAvailableLoadsResponse.routes = [];
+    const loadsForRoutes: Load[][] = generateCombinations(preMapLoads);
+    for (const loadsForRoute of loadsForRoutes) {
+      if (loadsForRoute.length === 0) continue;
+      const routeInfo: RouteInfo = {
+        distance: 0,
+        distanceUnit: loadsForRoute[0].distanceUnit,
+        duration: 0,
+        durationUnit: loadsForRoute[0].durationUnit,
+        amount: 0,
+        currency: loadsForRoute[0].currency,
+        description: '',
+        returnAt: '',
+        deadhead: 0,
+        directions: '',
+        type: 'standard',
+        loads: loadsForRoute,
+        differInfo: null // for now
+      };
+      loadsForRoute.forEach(load => {
+        routeInfo.distance += load.distance;
+        routeInfo.duration += load.duration;
+        routeInfo.amount += load.amount;
+        routeInfo.deadhead += load.originDeadhead + load.destinationDeadhead;
+
+        load.stopPoints.forEach(stopPoint => {
+          stopPoint.radius /= 1.5;
+        });
+        if (this.isEnRouteLoad(load)) {
+          routeInfo.type = 'enRoute';
+        } else if (!this.isStandardLoad(load)) {
+          routeInfo.type = 'notValidYet';
+        }
+      });
+      if (routeInfo.type === 'enRoute') {
+        searchAvailableLoadsResponse.routes.push(routeInfo);
+      }
+    }
+
+    return searchAvailableLoadsResponse;
+  }
+
+  isStandardLoad(load: Load): boolean {
+    // Todo: Need to compare unit, for now, just use miles
+    const distance1 = Loc.kilometersToMiles(
+      Loc.distance(load.pickupStop.coordinates, load.stopPoints[0].location.coordinate)
+    );
+    const distance2 = Loc.kilometersToMiles(
+      Loc.distance(load.deliveryStop.coordinates, load.stopPoints[1].location.coordinate)
+    );
+
+    return distance1 < load.stopPoints[0].radius && distance2 < load.stopPoints[1].radius;
+  }
+
+  isEnRouteLoad(load: Load): boolean {
+    // Todo: Need to compare unit, for now, just use miles
+    const distance = Loc.kilometersToMiles(
+      Loc.distance(load.stopPoints[0].location.coordinate, load.stopPoints[1].location.coordinate)
+    );
+
+    const distance3 = Loc.kilometersToMiles(
+      Loc.distance(load.pickupStop.coordinates, load.stopPoints[1].location.coordinate)
+    );
+    const distance4 = Loc.kilometersToMiles(
+      Loc.distance(load.deliveryStop.coordinates, load.stopPoints[0].location.coordinate)
+    );
+
+    return !this.isStandardLoad(load) && distance3 < distance && distance4 < distance;
   }
 
   async searchAvailableLoadCoyote(searchAvailableLoadDto: SearchAvailableLoadDto): Promise<Load[] | any> {
