@@ -70,10 +70,10 @@ export class LoadService {
       stopPoints = [...stopPoints, ...reveredStopPoints];
       searchAvailableLoadDto.stopPoints = stopPoints;
     }
-    const preMaploads: Load[][] = [];
+    const preMapLoads: Load[][] = [];
     for (let i = 0; i < searchAvailableLoadDto.stopPoints.length - 1; i++) {
       const stopPoints = [searchAvailableLoadDto.stopPoints[i], searchAvailableLoadDto.stopPoints[i + 1]];
-      preMaploads.push(
+      preMapLoads.push(
         await this.searchAvailableLoadsBetween2Points({
           ...searchAvailableLoadDto,
           stopPoints
@@ -84,7 +84,7 @@ export class LoadService {
     const searchAvailableLoadsResponse = new SearchAvailableLoadsResponse();
     searchAvailableLoadsResponse.routes = [];
 
-    const loadsForRoutes: Load[][] = generateCombinations(preMaploads);
+    const loadsForRoutes: Load[][] = generateCombinations(preMapLoads);
     for (const loadsForRoute of loadsForRoutes) {
       const routeInfo: RouteInfo = {
         distance: 0,
@@ -243,17 +243,24 @@ export class LoadService {
   }
 }
 
-function generateCombinations(preMaploads: Load[][]): Load[][] {
+function generateCombinations(preMapLoads: Load[][]): Load[][] {
   const finalResults: Load[][] = [];
 
   function generateCombinationHelper(currentCombination: Load[], index: number): void {
-    if (index === preMaploads.length) {
+    if (index === preMapLoads.length) {
       finalResults.push([...currentCombination]);
 
       return;
     }
 
-    for (const load of preMaploads[index]) {
+    // Check if the current array is not empty
+    if (preMapLoads[index].length === 0) {
+      generateCombinationHelper(currentCombination, index + 1);
+
+      return;
+    }
+
+    for (const load of preMapLoads[index]) {
       currentCombination.push(load);
       generateCombinationHelper(currentCombination, index + 1);
       currentCombination.pop();
