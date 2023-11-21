@@ -127,9 +127,9 @@ export class LoadService {
         );
 
         // Todo: Need to compare unit, for now, just use miles
-        if (distance1 < load.stopPoints[0].radius && distance2 < load.stopPoints[1].radius) {
-          routeInfo.type = 'standard';
-        } else {
+        // if not standard route - by default
+        if (!(distance1 < load.stopPoints[0].radius && distance2 < load.stopPoints[1].radius)) {
+          // => check if enRoute
           // Not going in the opposite direction of the destination
           if (distance3 < distance && distance4 < distance) {
             routeInfo.type = 'enRoute';
