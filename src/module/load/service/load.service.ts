@@ -124,6 +124,9 @@ export class LoadService {
       searchAvailableLoadsResponse.routes.push(routeInfo);
     }
 
+    const searchEnRoutes = await this.searchEnRoute(searchAvailableLoadDto);
+    searchAvailableLoadsResponse.routes.push(...searchEnRoutes.routes);
+
     return searchAvailableLoadsResponse;
   }
 
