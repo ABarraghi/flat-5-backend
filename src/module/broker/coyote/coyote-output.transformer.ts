@@ -81,11 +81,13 @@ export class CoyoteOutputTransformer {
   }
 
   getLoadDetail(value: CoyoteLoad): Load {
-    const output = new Load();
-    output.broker = 'coyote';
-    output.loadId = value.loadId.toString();
+    const loadModel = new Load();
+    loadModel.broker = 'coyote';
+    loadModel.loadId = value.loadId.toString();
+    loadModel.originDeadhead = -1;
+    loadModel.destinationDeadhead = -1;
     const pickupStop = value.stops.find(stop => stop.stopType === 'Pickup');
-    output.pickupStop = {
+    loadModel.pickupStop = {
       address: this.buildAddress(pickupStop.facility.address),
       coordinates: {
         latitude: pickupStop.facility.geoCoordinates.latitude,
@@ -97,7 +99,7 @@ export class CoyoteOutputTransformer {
       }
     };
     const deliveryStop = value.stops.find(stop => stop.stopType === 'Delivery');
-    output.deliveryStop = {
+    loadModel.deliveryStop = {
       address: this.buildAddress(deliveryStop.facility.address),
       coordinates: {
         latitude: deliveryStop.facility.geoCoordinates.latitude,
@@ -109,7 +111,7 @@ export class CoyoteOutputTransformer {
       }
     };
 
-    return output;
+    return loadModel;
   }
 
   bookLoad(value: any): any {

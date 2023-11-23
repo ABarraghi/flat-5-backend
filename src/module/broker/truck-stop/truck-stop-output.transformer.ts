@@ -24,6 +24,8 @@ export class TruckStopOutputTransformer {
       const loadModel = new Load();
       loadModel.broker = 'truckStop';
       loadModel.loadId = load.ID.toString();
+      loadModel.originDeadhead = -1;
+      loadModel.destinationDeadhead = -1;
 
       const input: TruckStopDeliveryAddressInfo = {
         originCity: load.OriginCity,
