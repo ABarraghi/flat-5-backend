@@ -11,10 +11,14 @@ export class LoadController {
   @Post('available')
   searchStandard(
     @Body() searchAvailableLoadDto: SearchAvailableLoadDto,
-    @Headers('restrict-business-logic') isRestrictBusinessLogic: string
+    @Headers('restrict-business-logic') isRestrictBusinessLogic: string,
+    @Headers('allow-empty-loads') allowEmptyLoads: string
   ) {
     if (searchAvailableLoadDto.isRestrictBusinessLogic === undefined) {
       searchAvailableLoadDto.isRestrictBusinessLogic = isRestrictBusinessLogic == 'true';
+    }
+    if (searchAvailableLoadDto.allowEmptyLoads === undefined) {
+      searchAvailableLoadDto.allowEmptyLoads = allowEmptyLoads == 'true';
     }
 
     return this.loadService.searchStandard(searchAvailableLoadDto);

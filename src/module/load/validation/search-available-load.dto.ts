@@ -113,4 +113,6 @@ export class SearchAvailableLoadDto extends BaseSearchDto {
 
   @IsOptional()
   isRestrictBusinessLogic: boolean;
+  @IsOptional()
+  allowEmptyLoads: boolean;
 }
