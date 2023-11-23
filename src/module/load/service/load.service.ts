@@ -83,6 +83,14 @@ export class LoadService {
     const preMapLoads: Load[][] = [];
     for (let i = 0; i < searchAvailableLoadDto.stopPoints.length - 1; i++) {
       const stopPoints = [searchAvailableLoadDto.stopPoints[i], searchAvailableLoadDto.stopPoints[i + 1]];
+      const loads = await this.searchAvailableLoadsBetween2Points({
+        ...searchAvailableLoadDto,
+        stopPoints
+      });
+
+      if (!searchAvailableLoadDto.allowEmptyLoads && loads.length === 0) {
+        return [];
+      }
       preMapLoads.push(
         await this.searchAvailableLoadsBetween2Points({
           ...searchAvailableLoadDto,
