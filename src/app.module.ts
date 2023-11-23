@@ -21,9 +21,7 @@ import { MongooseModule } from '@nestjs/mongoose';
     }),
     LoggingModule,
     ExceptionModule,
-    MongooseModule.forRoot(
-      'mongodb+srv://flat-local:hgvxvCjQQFJz3PSi@cluster-for-local.bdpwm99.mongodb.net/flat-5'
-    ),
+    MongooseModule.forRoot('mongodb+srv://flat-local:hgvxvCjQQFJz3PSi@cluster-for-local.bdpwm99.mongodb.net/flat-5'),
     LoadModule
   ],
   controllers: [AppController],

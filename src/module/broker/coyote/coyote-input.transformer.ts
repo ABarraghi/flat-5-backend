@@ -31,14 +31,14 @@ export class CoyoteInputTransformer {
     };
     if (value.stopPoints[0].stopDate) {
       input.origin.appointment = {
-        appointmentStartDateTime: dayjs.utc(value.stopPoints[0].stopDate.from).startOf('day').format(),
-        appointmentEndDateTime: dayjs.utc(value.stopPoints[0].stopDate.from).endOf('day').format()
+        appointmentStartDateTime: value.stopPoints[0].stopDate.from,
+        appointmentEndDateTime: dayjs(value.stopPoints[0].stopDate.from).add(1, 'day').format()
         // appointmentStartDateTime: '2023-11-14T14:00:00-05:00',
         // appointmentEndDateTime: '2023-11-14T12:00:00-05:00'
       };
 
       if (value.stopPoints[0].stopDate.to) {
-        // input.origin.appointment.appointmentEndDateTime = dayjs(value.stopPoints[0].stopDate.to).endOf('day').format();
+        input.origin.appointment.appointmentEndDateTime = value.stopPoints[0].stopDate.to;
       }
     }
     if (value.stopPoints[1]) {
@@ -55,14 +55,12 @@ export class CoyoteInputTransformer {
 
       if (value.stopPoints[1].stopDate) {
         input.origin.appointment = {
-          appointmentStartDateTime: dayjs(value.stopPoints[1].stopDate.from).startOf('day').format(),
-          appointmentEndDateTime: dayjs(value.stopPoints[1].stopDate.from).endOf('day').format()
+          appointmentStartDateTime: value.stopPoints[1].stopDate.from,
+          appointmentEndDateTime: dayjs(value.stopPoints[1].stopDate.from).add(1, 'day').format()
         };
 
         if (value.stopPoints[1].stopDate.to) {
-          input.origin.appointment.appointmentEndDateTime = dayjs(value.stopPoints[1].stopDate.to)
-            .endOf('day')
-            .format();
+          input.origin.appointment.appointmentEndDateTime = value.stopPoints[1].stopDate.to;
         }
       }
     }

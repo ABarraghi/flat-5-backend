@@ -63,7 +63,7 @@ export class StopDate {
   @Validate(IsBefore, ['to'])
   from: string;
 
-  @IsOptional()
+  // @IsOptional()
   @IsString()
   @IsISO8601()
   @Validate(IsAfterNow)

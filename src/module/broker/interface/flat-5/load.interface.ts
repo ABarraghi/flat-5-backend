@@ -83,6 +83,7 @@ export class BookingLoad {
 }
 
 export class RouteInfo {
+  stopPoints: StopPointDto[];
   distance?: number;
   distanceUnit?: string;
   duration?: number;
