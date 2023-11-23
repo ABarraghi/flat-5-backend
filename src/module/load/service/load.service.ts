@@ -19,9 +19,12 @@ import { TruckStopOutputTransformer } from '@module/broker/truck-stop/truck-stop
 import { TruckStopInputTransformer } from '@module/broker/truck-stop/truck-stop-input.transformer';
 import { Logging } from '@core/logger/logging.service';
 import { Loc } from '@core/util/loc';
+import * as dayjs from 'dayjs';
 
 @Injectable()
 export class LoadService {
+  maximumDeadheadMilesRate = 0.3;
+
   constructor(
     private configService: ConfigService,
     private coyoteBrokerService: CoyoteBrokerService,
@@ -48,7 +51,7 @@ export class LoadService {
       searchAvailableLoadDto.stopPoints[1].location.coordinate.latitude.toString() +
       '_' +
       searchAvailableLoadDto.stopPoints[1].location.coordinate.longitude.toString();
-    const loads: Load[] = [];
+    let loads: Load[] = [];
     const [coyoteLoads, datLoads, truckStopLoads] = await Promise.all([
       this.searchAvailableLoadCoyote(searchAvailableLoadDto),
       this.searchAvailableLoadDat(searchAvailableLoadDto),
@@ -59,6 +62,11 @@ export class LoadService {
       load.keyByPoints = loadKeyByPoints;
       load.stopPoints = searchAvailableLoadDto.stopPoints;
     });
+    if (searchAvailableLoadDto.isRestrictBusinessLogic) {
+      loads = loads.filter(load => {
+        return this.validateLoadByDeadheadMiles(load) && this.validateLoadByMilesPerDay(load);
+      });
+    }
 
     return loads;
   }
@@ -91,10 +99,12 @@ export class LoadService {
     const searchAvailableLoadsResponse = new SearchAvailableLoadsResponse();
     searchAvailableLoadsResponse.routes = [];
 
+    const routes: RouteInfo[] = [];
     const loadsForRoutes: Load[][] = generateCombinations(preMapLoads);
     for (const loadsForRoute of loadsForRoutes) {
       if (loadsForRoute.length === 0) continue;
       const routeInfo: RouteInfo = {
+        stopPoints: searchAvailableLoadDto.stopPoints,
         distance: 0,
         distanceUnit: loadsForRoute[0].distanceUnit,
         duration: 0,
@@ -121,11 +131,12 @@ export class LoadService {
           routeInfo.type = 'notValidYet';
         }
       });
-      searchAvailableLoadsResponse.routes.push(routeInfo);
+      routes.push(routeInfo);
     }
 
-    const searchEnRoutes = await this.searchEnRoute(searchAvailableLoadDto);
-    searchAvailableLoadsResponse.routes.push(...searchEnRoutes.routes);
+    // const searchEnRoutes = await this.searchEnRoute(searchAvailableLoadDto);
+    // routes.push(...searchEnRoutes.routes);
+    searchAvailableLoadsResponse.routes = routes;
 
     return searchAvailableLoadsResponse;
   }
@@ -141,6 +152,7 @@ export class LoadService {
     for (const loadsForRoute of loadsForRoutes) {
       if (loadsForRoute.length === 0) continue;
       const routeInfo: RouteInfo = {
+        stopPoints: searchAvailableLoadDto.stopPoints,
         distance: 0,
         distanceUnit: loadsForRoute[0].distanceUnit,
         duration: 0,
@@ -191,19 +203,7 @@ export class LoadService {
   }
 
   isEnRouteLoad(load: Load): boolean {
-    // Todo: Need to compare unit, for now, just use miles
-    const distance = Loc.kilometersToMiles(
-      Loc.distance(load.stopPoints[0].location.coordinate, load.stopPoints[1].location.coordinate)
-    );
-
-    const distance3 = Loc.kilometersToMiles(
-      Loc.distance(load.pickupStop.coordinates, load.stopPoints[1].location.coordinate)
-    );
-    const distance4 = Loc.kilometersToMiles(
-      Loc.distance(load.deliveryStop.coordinates, load.stopPoints[0].location.coordinate)
-    );
-
-    return !this.isStandardLoad(load) && distance3 < distance && distance4 < distance;
+    return !this.isStandardLoad(load) && this.validateLoadIsBetween2Points(load);
   }
 
   async searchAvailableLoadCoyote(searchAvailableLoadDto: SearchAvailableLoadDto): Promise<Load[] | any> {
@@ -295,6 +295,52 @@ export class LoadService {
       default:
         return;
     }
+  }
+
+  validateLoadByDeadheadMiles(load: Load): boolean {
+    if (load.originDeadhead < 0) {
+      load.originDeadhead = Loc.kilometersToMiles(
+        Loc.distance(load.pickupStop.coordinates, load.stopPoints[0].location.coordinate)
+      );
+    }
+    if (load.destinationDeadhead < 0) {
+      load.destinationDeadhead = Loc.kilometersToMiles(
+        Loc.distance(load.deliveryStop.coordinates, load.stopPoints[1].location.coordinate)
+      );
+    }
+    const deadheadMiles = load.originDeadhead + load.destinationDeadhead;
+    let distance = 0;
+    distance = Loc.kilometersToMiles(
+      Loc.distance(load.stopPoints[0].location.coordinate, load.stopPoints[1].location.coordinate)
+    );
+
+    return deadheadMiles / distance < this.maximumDeadheadMilesRate;
+  }
+
+  validateLoadByMilesPerDay(load: Load): boolean {
+    // Todo: count distance by mapbox (real route)
+    const distance = Loc.kilometersToMiles(
+      Loc.distance(load.stopPoints[0].location.coordinate, load.stopPoints[1].location.coordinate)
+    );
+    const hoursDifference = dayjs(load.stopPoints[1].stopDate.to).diff(dayjs(load.stopPoints[0].stopDate.from), 'hour');
+    const milesPerDay = (distance / hoursDifference) * 24;
+
+    return milesPerDay <= 600;
+  }
+
+  validateLoadIsBetween2Points(load: Load): boolean {
+    const distance = Loc.kilometersToMiles(
+      Loc.distance(load.stopPoints[0].location.coordinate, load.stopPoints[1].location.coordinate)
+    );
+
+    const distanceFromPickupToDestination = Loc.kilometersToMiles(
+      Loc.distance(load.pickupStop.coordinates, load.stopPoints[1].location.coordinate)
+    );
+    const distanceFromOriginToDelivery = Loc.kilometersToMiles(
+      Loc.distance(load.deliveryStop.coordinates, load.stopPoints[0].location.coordinate)
+    );
+
+    return distanceFromPickupToDestination < distance && distanceFromOriginToDelivery < distance;
   }
 
   async test(input?: any): Promise<any> {

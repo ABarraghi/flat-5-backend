@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Headers, Param, Post } from '@nestjs/common';
 import { LoadService } from '@module/load/service/load.service';
 import { SearchAvailableLoadDto } from '@module/load/validation/search-available-load.dto';
 import { ApiBrokers, isApiBroker } from '@module/broker/interface/flat-5/common.interface';
@@ -9,12 +9,19 @@ export class LoadController {
   constructor(private readonly loadService: LoadService) {}
 
   @Post('available')
-  searchStandard(@Body() searchAvailableLoadDto: SearchAvailableLoadDto) {
+  searchStandard(
+    @Body() searchAvailableLoadDto: SearchAvailableLoadDto,
+    @Headers('restrict-business-logic') isRestrictBusinessLogic: string
+  ) {
+    if (searchAvailableLoadDto.isRestrictBusinessLogic === undefined) {
+      searchAvailableLoadDto.isRestrictBusinessLogic = isRestrictBusinessLogic == 'true';
+    }
+
     return this.loadService.searchStandard(searchAvailableLoadDto);
   }
 
   @Post('en-route')
-  searchEnroute(@Body() searchAvailableLoadDto: SearchAvailableLoadDto) {
+  searchEnRoute(@Body() searchAvailableLoadDto: SearchAvailableLoadDto) {
     return this.loadService.searchEnRoute(searchAvailableLoadDto);
   }
 

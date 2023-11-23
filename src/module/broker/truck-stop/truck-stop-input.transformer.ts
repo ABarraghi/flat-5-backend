@@ -55,19 +55,19 @@ export class TruckStopInputTransformer {
 
     const pickupDates = [];
     if (value.stopPoints[0].stopDate) {
-      const fromDate = dayjs(value.stopPoints[0].stopDate.from).startOf('day').format();
-      let toDate = dayjs(value.stopPoints[0].stopDate.from).endOf('day').format(); // cause to-date is optional
+      const fromDate = value.stopPoints[0].stopDate.from;
+      let toDate = dayjs(value.stopPoints[0].stopDate.from).add(1, 'day').format();
       if (value.stopPoints[0].stopDate.to) {
-        toDate = dayjs(value.stopPoints[0].stopDate.to).endOf('day').format();
+        toDate = value.stopPoints[0].stopDate.to;
       }
       pickupDates.push(fromDate);
       pickupDates.push(toDate);
     }
     if (value.stopPoints[1].stopDate) {
-      const fromDate = dayjs(value.stopPoints[1].stopDate.from).startOf('day').format();
-      let toDate = dayjs(value.stopPoints[1].stopDate.from).endOf('day').format(); // cause to-date is optional
+      const fromDate = value.stopPoints[1].stopDate.from;
+      let toDate = dayjs(value.stopPoints[1].stopDate.from).add(1, 'day').format();
       if (value.stopPoints[1].stopDate.to) {
-        toDate = dayjs(value.stopPoints[1].stopDate.to).endOf('day').format();
+        toDate = value.stopPoints[1].stopDate.to;
       }
       pickupDates.push(fromDate);
       pickupDates.push(toDate);

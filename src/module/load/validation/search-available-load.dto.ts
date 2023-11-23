@@ -63,7 +63,7 @@ export class StopDate {
   @Validate(IsBefore, ['to'])
   from: string;
 
-  @IsOptional()
+  // @IsOptional()
   @IsString()
   @IsISO8601()
   @Validate(IsAfterNow)
@@ -110,4 +110,7 @@ export class SearchAvailableLoadDto extends BaseSearchDto {
 
   @IsOptional()
   shipmentFormat: string;
+
+  @IsOptional()
+  isRestrictBusinessLogic: boolean;
 }

@@ -68,11 +68,11 @@ export class DatInputTransformer {
     if (value.stopPoints[0].stopDate) {
       // for pickup date only
       criteria.availability = {
-        earliestWhen: dayjs(value.stopPoints[0].stopDate.from).startOf('day').format(),
-        latestWhen: dayjs(value.stopPoints[0].stopDate.from).endOf('day').format()
+        earliestWhen: value.stopPoints[0].stopDate.from,
+        latestWhen: dayjs(value.stopPoints[0].stopDate.from).add(1, 'day').format()
       };
       if (value.stopPoints[0].stopDate.to) {
-        criteria.availability.latestWhen = dayjs(value.stopPoints[0].stopDate.to).endOf('day').format();
+        criteria.availability.latestWhen = value.stopPoints[0].stopDate.to;
       }
     }
     if (value.stopPoints[1]) {
