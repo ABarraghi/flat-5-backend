@@ -24,6 +24,10 @@ export class Loc {
     return R * c;
   }
 
+  static distanceInMiles(origin: GeoCoordinates, destination: GeoCoordinates): number {
+    return Loc.kilometersToMiles(Loc.distance(origin, destination));
+  }
+
   static kilometersToMiles(kilometers: number): number {
     const milesPerKilometer = 0.621371; // 1 kilometer is approximately 0.621371 miles
 

@@ -35,8 +35,8 @@ export class DatInputTransformer {
         },
         origin: {
           place: {
-            latitude: value.stopPoints[0].location.coordinate.latitude,
-            longitude: value.stopPoints[0].location.coordinate.longitude,
+            latitude: value.stopPoints[0].location.coordinates.latitude,
+            longitude: value.stopPoints[0].location.coordinates.longitude,
             city: value.stopPoints[0].location.city ?? '',
             stateProv: (value.stopPoints[0].location.state ?? '') as DATState,
             county: value.stopPoints[0].location.country ?? '',
@@ -78,8 +78,8 @@ export class DatInputTransformer {
     if (value.stopPoints[1]) {
       criteria.lane.destination = {
         place: {
-          latitude: value.stopPoints[1].location.coordinate.latitude,
-          longitude: value.stopPoints[1].location.coordinate.longitude,
+          latitude: value.stopPoints[1].location.coordinates.latitude,
+          longitude: value.stopPoints[1].location.coordinates.longitude,
           city: value.stopPoints[0].location.city ?? '',
           stateProv: (value.stopPoints[0].location.state ?? '') as DATState,
           county: value.stopPoints[0].location.country ?? '',

@@ -54,7 +54,8 @@ export class TruckStopOutputTransformer {
           longitude: deliveryInfo?.destinationCoordinates?.length > 1 ? deliveryInfo?.destinationCoordinates[0] : 0
         }
       };
-      loadModel.distance = deliveryInfo?.estimationDistance ? +deliveryInfo?.estimationDistance.toFixed(2) : 0;
+      loadModel.driveDistance = deliveryInfo?.estimationDistance ? +deliveryInfo?.estimationDistance.toFixed(2) : 0;
+      loadModel.distance = loadModel.driveDistance ?? loadModel.flyDistance;
       loadModel.distanceUnit = 'Miles';
       loadModel.duration = deliveryInfo?.estimationDurations ? +deliveryInfo?.estimationDurations.toFixed(2) : 0;
       loadModel.amount = deliveryInfo?.estimationAmount ? +deliveryInfo?.estimationAmount.toFixed(2) : 0;

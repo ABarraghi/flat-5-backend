@@ -51,10 +51,15 @@ export class DatOutputTransformer {
               longitude: deliveryStop.place.longitude
             }
           };
+          loadModel.flyDistance = Loc.distanceInMiles(
+            loadModel.pickupStop.coordinates,
+            loadModel.deliveryStop.coordinates
+          );
         }
         loadModel.originDeadhead = match.originDeadheadMiles.miles;
         loadModel.destinationDeadhead = match.destinationDeadheadMiles.miles;
-        loadModel.distance = match.tripLength.miles;
+        loadModel.driveDistance = match.tripLength.miles;
+        loadModel.distance = loadModel.driveDistance ?? loadModel.flyDistance;
         loadModel.distanceUnit = 'Miles';
         loadModel.rawLoad = match;
         if (match.loadBoardRateInfo) {

@@ -38,6 +38,8 @@ export class Load {
   amount: number;
   currency: string;
   distance: number;
+  driveDistance: number;
+  flyDistance: number;
   distanceUnit: string;
   duration: number;
   durationUnit: 'seconds' | 'minutes' | 'hours';
@@ -84,6 +86,8 @@ export class BookingLoad {
 
 export class RouteInfo {
   stopPoints: StopPointDto[];
+  flyDistance?: number;
+  driveDistance?: number;
   distance?: number;
   distanceUnit?: string;
   duration?: number;
