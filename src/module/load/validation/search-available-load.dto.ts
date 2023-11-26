@@ -3,6 +3,7 @@ import {
   ArrayMaxSize,
   ArrayMinSize,
   ArrayNotEmpty,
+  IsBoolean,
   IsDefined,
   IsIn,
   IsISO8601,
@@ -33,7 +34,7 @@ export class LocationDto {
   @IsOptional()
   @ValidateNested()
   @Type(() => CoordinateDto)
-  coordinate: CoordinateDto;
+  coordinates: CoordinateDto;
 
   @IsOptional()
   @IsNotEmpty()
@@ -80,6 +81,10 @@ export class StopPointDto {
   @Type(() => StopDate)
   @IsOptional()
   stopDate: StopDate;
+
+  @IsBoolean()
+  @IsOptional()
+  hadLoad: boolean;
 
   @IsOptional()
   @IsNumber()

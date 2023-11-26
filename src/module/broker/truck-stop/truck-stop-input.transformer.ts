@@ -20,11 +20,11 @@ export class TruckStopInputTransformer {
     const input = new TruckStopInput();
     let originLatitude = 0;
     let originLongitude = 0;
-    if (value.stopPoints[0].location.coordinate.latitude) {
-      originLatitude = Math.floor(value.stopPoints[0].location.coordinate.latitude * 100);
+    if (value.stopPoints[0].location.coordinates.latitude) {
+      originLatitude = Math.floor(value.stopPoints[0].location.coordinates.latitude * 100);
     }
-    if (value.stopPoints[0].location.coordinate.longitude) {
-      originLongitude = Math.floor(value.stopPoints[0].location.coordinate.longitude * 100);
+    if (value.stopPoints[0].location.coordinates.longitude) {
+      originLongitude = Math.floor(value.stopPoints[0].location.coordinates.longitude * 100);
     }
     input.origin = {
       city: value.stopPoints[0].location.city || '',
@@ -37,11 +37,11 @@ export class TruckStopInputTransformer {
     if (value.stopPoints[1]) {
       let destinationLatitude = 0;
       let destinationLongitude = 0;
-      if (value.stopPoints[1].location?.coordinate?.latitude) {
-        destinationLatitude = Math.floor(value.stopPoints[1].location.coordinate.latitude * 100);
+      if (value.stopPoints[1].location?.coordinates?.latitude) {
+        destinationLatitude = Math.floor(value.stopPoints[1].location.coordinates.latitude * 100);
       }
-      if (value.stopPoints[1].location?.coordinate?.longitude) {
-        destinationLongitude = Math.floor(value.stopPoints[1].location.coordinate.longitude * 100);
+      if (value.stopPoints[1].location?.coordinates?.longitude) {
+        destinationLongitude = Math.floor(value.stopPoints[1].location.coordinates.longitude * 100);
       }
       input.destination = {
         city: value.stopPoints[1].location.city || '',

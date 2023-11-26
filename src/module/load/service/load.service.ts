@@ -44,13 +44,13 @@ export class LoadService {
       searchAvailableLoadDto.stopPoints = searchAvailableLoadDto.stopPoints.slice(0, 2);
     }
     const loadKeyByPoints =
-      searchAvailableLoadDto.stopPoints[0].location.coordinate.latitude.toString() +
+      searchAvailableLoadDto.stopPoints[0].location.coordinates.latitude.toString() +
       '_' +
-      searchAvailableLoadDto.stopPoints[0].location.coordinate.longitude.toString() +
+      searchAvailableLoadDto.stopPoints[0].location.coordinates.longitude.toString() +
       '_' +
-      searchAvailableLoadDto.stopPoints[1].location.coordinate.latitude.toString() +
+      searchAvailableLoadDto.stopPoints[1].location.coordinates.latitude.toString() +
       '_' +
-      searchAvailableLoadDto.stopPoints[1].location.coordinate.longitude.toString();
+      searchAvailableLoadDto.stopPoints[1].location.coordinates.longitude.toString();
     let loads: Load[] = [];
     const [coyoteLoads, datLoads, truckStopLoads] = await Promise.all([
       this.searchAvailableLoadCoyote(searchAvailableLoadDto),
@@ -82,21 +82,23 @@ export class LoadService {
     }
     const preMapLoads: Load[][] = [];
     for (let i = 0; i < searchAvailableLoadDto.stopPoints.length - 1; i++) {
-      const stopPoints = [searchAvailableLoadDto.stopPoints[i], searchAvailableLoadDto.stopPoints[i + 1]];
-      const loads = await this.searchAvailableLoadsBetween2Points({
-        ...searchAvailableLoadDto,
-        stopPoints
-      });
-
-      if (!searchAvailableLoadDto.allowEmptyLoads && loads.length === 0) {
-        return [];
-      }
-      preMapLoads.push(
-        await this.searchAvailableLoadsBetween2Points({
+      if (!searchAvailableLoadDto.stopPoints[i].hadLoad) {
+        const stopPoints = [searchAvailableLoadDto.stopPoints[i], searchAvailableLoadDto.stopPoints[i + 1]];
+        const loads = await this.searchAvailableLoadsBetween2Points({
           ...searchAvailableLoadDto,
           stopPoints
-        })
-      );
+        });
+
+        if (!searchAvailableLoadDto.allowEmptyLoads && loads.length === 0) {
+          return [];
+        }
+        preMapLoads.push(
+          await this.searchAvailableLoadsBetween2Points({
+            ...searchAvailableLoadDto,
+            stopPoints
+          })
+        );
+      }
     }
 
     return preMapLoads;
@@ -113,6 +115,8 @@ export class LoadService {
       if (loadsForRoute.length === 0) continue;
       const routeInfo: RouteInfo = {
         stopPoints: searchAvailableLoadDto.stopPoints,
+        flyDistance: 0,
+        driveDistance: 0,
         distance: 0,
         distanceUnit: loadsForRoute[0].distanceUnit,
         duration: 0,
@@ -128,7 +132,9 @@ export class LoadService {
         differInfo: null // for now
       };
       loadsForRoute.forEach(load => {
-        routeInfo.distance += load.distance;
+        routeInfo.flyDistance += load.flyDistance ?? 0;
+        routeInfo.driveDistance += load.driveDistance ?? 0;
+        routeInfo.distance += routeInfo.driveDistance || routeInfo.flyDistance;
         routeInfo.duration += load.duration;
         routeInfo.amount += load.amount;
         routeInfo.deadhead += load.originDeadhead + load.destinationDeadhead;
@@ -142,8 +148,8 @@ export class LoadService {
       routes.push(routeInfo);
     }
 
-    // const searchEnRoutes = await this.searchEnRoute(searchAvailableLoadDto);
-    // routes.push(...searchEnRoutes.routes);
+    const searchEnRoutes = await this.searchEnRoute(searchAvailableLoadDto);
+    routes.push(...searchEnRoutes.routes);
     searchAvailableLoadsResponse.routes = routes;
 
     return searchAvailableLoadsResponse;
@@ -151,7 +157,7 @@ export class LoadService {
 
   async searchEnRoute(searchAvailableLoadDto: SearchAvailableLoadDto): Promise<SearchAvailableLoadsResponse | any> {
     searchAvailableLoadDto.stopPoints.forEach(stopPoint => {
-      stopPoint.radius *= 1.5;
+      stopPoint.radius *= 1.7;
     });
     const preMapLoads: Load[][] = await this.searchAvailableLoads(searchAvailableLoadDto);
     const searchAvailableLoadsResponse = new SearchAvailableLoadsResponse();
@@ -161,6 +167,8 @@ export class LoadService {
       if (loadsForRoute.length === 0) continue;
       const routeInfo: RouteInfo = {
         stopPoints: searchAvailableLoadDto.stopPoints,
+        flyDistance: 0,
+        driveDistance: 0,
         distance: 0,
         distanceUnit: loadsForRoute[0].distanceUnit,
         duration: 0,
@@ -171,28 +179,27 @@ export class LoadService {
         returnAt: '',
         deadhead: 0,
         directions: '',
-        type: 'standard',
+        type: 'enRoute',
         loads: loadsForRoute,
         differInfo: null // for now
       };
       loadsForRoute.forEach(load => {
-        routeInfo.distance += load.distance;
+        routeInfo.flyDistance += load.flyDistance ?? 0;
+        routeInfo.driveDistance += load.driveDistance ?? 0;
+        routeInfo.distance += routeInfo.driveDistance || routeInfo.flyDistance;
         routeInfo.duration += load.duration;
         routeInfo.amount += load.amount;
         routeInfo.deadhead += load.originDeadhead + load.destinationDeadhead;
 
         load.stopPoints.forEach(stopPoint => {
-          stopPoint.radius /= 1.5;
+          stopPoint.radius /= 1.7;
         });
-        if (this.isEnRouteLoad(load)) {
-          routeInfo.type = 'enRoute';
-        } else if (!this.isStandardLoad(load)) {
-          routeInfo.type = 'notValidYet';
-        }
       });
-      if (routeInfo.type === 'enRoute') {
-        searchAvailableLoadsResponse.routes.push(routeInfo);
+      // Need: double check this logic
+      if (loadsForRoute.some(load => !this.isNotOverDistance(load))) {
+        continue;
       }
+      searchAvailableLoadsResponse.routes.push(routeInfo);
     }
 
     return searchAvailableLoadsResponse;
@@ -200,18 +207,18 @@ export class LoadService {
 
   isStandardLoad(load: Load): boolean {
     // Todo: Need to compare unit, for now, just use miles
-    const distance1 = Loc.kilometersToMiles(
-      Loc.distance(load.pickupStop.coordinates, load.stopPoints[0].location.coordinate)
-    );
-    const distance2 = Loc.kilometersToMiles(
-      Loc.distance(load.deliveryStop.coordinates, load.stopPoints[1].location.coordinate)
-    );
+    const distance1 = Loc.distanceInMiles(load.pickupStop.coordinates, load.stopPoints[0].location.coordinates);
+    const distance2 = Loc.distanceInMiles(load.deliveryStop.coordinates, load.stopPoints[1].location.coordinates);
 
     return distance1 < load.stopPoints[0].radius && distance2 < load.stopPoints[1].radius;
   }
 
   isEnRouteLoad(load: Load): boolean {
     return !this.isStandardLoad(load) && this.validateLoadIsBetween2Points(load);
+  }
+
+  isNotOverDistance(load: Load, percent = 0.5): boolean {
+    return (load.driveDistance ?? load.flyDistance) / load.distance < 1 + percent;
   }
 
   async searchAvailableLoadCoyote(searchAvailableLoadDto: SearchAvailableLoadDto): Promise<Load[] | any> {
@@ -308,18 +315,18 @@ export class LoadService {
   validateLoadByDeadheadMiles(load: Load): boolean {
     if (load.originDeadhead < 0) {
       load.originDeadhead = Loc.kilometersToMiles(
-        Loc.distance(load.pickupStop.coordinates, load.stopPoints[0].location.coordinate)
+        Loc.distance(load.pickupStop.coordinates, load.stopPoints[0].location.coordinates)
       );
     }
     if (load.destinationDeadhead < 0) {
       load.destinationDeadhead = Loc.kilometersToMiles(
-        Loc.distance(load.deliveryStop.coordinates, load.stopPoints[1].location.coordinate)
+        Loc.distance(load.deliveryStop.coordinates, load.stopPoints[1].location.coordinates)
       );
     }
     const deadheadMiles = load.originDeadhead + load.destinationDeadhead;
     let distance = 0;
     distance = Loc.kilometersToMiles(
-      Loc.distance(load.stopPoints[0].location.coordinate, load.stopPoints[1].location.coordinate)
+      Loc.distance(load.stopPoints[0].location.coordinates, load.stopPoints[1].location.coordinates)
     );
 
     return deadheadMiles / distance < this.maximumDeadheadMilesRate;
@@ -328,7 +335,7 @@ export class LoadService {
   validateLoadByMilesPerDay(load: Load): boolean {
     // Todo: count distance by mapbox (real route)
     const distance = Loc.kilometersToMiles(
-      Loc.distance(load.stopPoints[0].location.coordinate, load.stopPoints[1].location.coordinate)
+      Loc.distance(load.stopPoints[0].location.coordinates, load.stopPoints[1].location.coordinates)
     );
     const hoursDifference = dayjs(load.stopPoints[1].stopDate.to).diff(dayjs(load.stopPoints[0].stopDate.from), 'hour');
     const milesPerDay = (distance / hoursDifference) * 24;
@@ -337,15 +344,18 @@ export class LoadService {
   }
 
   validateLoadIsBetween2Points(load: Load): boolean {
-    const distance = Loc.kilometersToMiles(
-      Loc.distance(load.stopPoints[0].location.coordinate, load.stopPoints[1].location.coordinate)
+    const distance = Loc.distanceInMiles(
+      load.stopPoints[0].location.coordinates,
+      load.stopPoints[1].location.coordinates
     );
 
-    const distanceFromPickupToDestination = Loc.kilometersToMiles(
-      Loc.distance(load.pickupStop.coordinates, load.stopPoints[1].location.coordinate)
+    const distanceFromPickupToDestination = Loc.distanceInMiles(
+      load.pickupStop.coordinates,
+      load.stopPoints[1].location.coordinates
     );
-    const distanceFromOriginToDelivery = Loc.kilometersToMiles(
-      Loc.distance(load.deliveryStop.coordinates, load.stopPoints[0].location.coordinate)
+    const distanceFromOriginToDelivery = Loc.distanceInMiles(
+      load.deliveryStop.coordinates,
+      load.stopPoints[0].location.coordinates
     );
 
     return distanceFromPickupToDestination < distance && distanceFromOriginToDelivery < distance;

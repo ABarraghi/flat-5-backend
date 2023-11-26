@@ -21,8 +21,8 @@ export class CoyoteInputTransformer {
     const input = new CoyoteInput();
     input.origin = {
       location: {
-        latitude: value.stopPoints[0].location.coordinate.latitude,
-        longitude: value.stopPoints[0].location.coordinate.longitude
+        latitude: value.stopPoints[0].location.coordinates.latitude,
+        longitude: value.stopPoints[0].location.coordinates.longitude
       },
       deadheadRadius: {
         value: Math.round(value.stopPoints[0].radius) ?? 100,
@@ -44,8 +44,8 @@ export class CoyoteInputTransformer {
     if (value.stopPoints[1]) {
       input.destination = {
         location: {
-          latitude: value.stopPoints[1].location.coordinate.latitude,
-          longitude: value.stopPoints[1].location.coordinate.longitude
+          latitude: value.stopPoints[1].location.coordinates.latitude,
+          longitude: value.stopPoints[1].location.coordinates.longitude
         },
         deadheadRadius: {
           value: Math.round(value.stopPoints[1].radius) ?? 100,

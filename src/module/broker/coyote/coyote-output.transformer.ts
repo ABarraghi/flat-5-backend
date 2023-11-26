@@ -5,6 +5,7 @@ import {
   CoyoteLoad,
   CoyoteSearchLoadResponse
 } from '@module/broker/interface/coyote/coyote-response.interface';
+import { Loc } from '@core/util/loc';
 
 @Injectable()
 export class CoyoteOutputTransformer {
@@ -40,25 +41,32 @@ export class CoyoteOutputTransformer {
         notes: pickupStop.stopDetails.stopNotes
       };
       const deliveryStop = load.stops.find(stop => stop.stopType === 'Delivery');
-      loadModel.deliveryStop = {
-        address: this.buildAddress(deliveryStop.facility.address),
-        coordinates: {
-          latitude: deliveryStop.facility.geoCoordinates.latitude,
-          longitude: deliveryStop.facility.geoCoordinates.longitude
-        },
-        appointment: {
-          startTime: deliveryStop.appointment.appointmentStartDateTimeUtc,
-          endTime: deliveryStop.appointment.appointmentEndDateTimeUtc
-        },
-        notes: deliveryStop.stopDetails.stopNotes
-      };
+      if (deliveryStop) {
+        loadModel.deliveryStop = {
+          address: this.buildAddress(deliveryStop.facility.address),
+          coordinates: {
+            latitude: deliveryStop.facility.geoCoordinates.latitude,
+            longitude: deliveryStop.facility.geoCoordinates.longitude
+          },
+          appointment: {
+            startTime: deliveryStop.appointment.appointmentStartDateTimeUtc,
+            endTime: deliveryStop.appointment.appointmentEndDateTimeUtc
+          },
+          notes: deliveryStop.stopDetails.stopNotes
+        };
+        loadModel.flyDistance = Loc.distanceInMiles(
+          loadModel.pickupStop.coordinates,
+          loadModel.deliveryStop.coordinates
+        );
+      }
       loadModel.amount = load.loadDetails.rate.value;
       loadModel.currency = load.loadDetails.rate.currencyType;
       loadModel.rate =
         load.loadDetails.loadDistance.value && load.loadDetails.rate.value
           ? load.loadDetails.rate.value / load.loadDetails.loadDistance.value
           : -1;
-      loadModel.distance = load.loadDetails.loadDistance.value;
+      loadModel.driveDistance = load.loadDetails.loadDistance.value;
+      loadModel.distance = loadModel.driveDistance ?? loadModel.flyDistance;
       loadModel.distanceUnit = load.loadDetails.loadDistance.unit;
       // Todo: need to re-calculate duration by business logic
       loadModel.duration = load.loadDetails.loadDistance.value / 60;
