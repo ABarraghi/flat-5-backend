@@ -9,6 +9,8 @@ import { Loc } from '@core/util/loc';
 import { MapboxService } from '@module/broker/service/mapbox.service';
 import { PriceService } from '@module/broker/service/price.service';
 import { Logging } from '@core/logger/logging.service';
+import { SearchAvailableLoadDto } from '@module/load/validation/search-available-load.dto';
+import * as dayjs from 'dayjs';
 
 @Injectable()
 export class TruckStopOutputTransformer {
@@ -17,7 +19,7 @@ export class TruckStopOutputTransformer {
     private priceService: PriceService
   ) {}
 
-  async searchAvailableLoads(value: TruckStopLoad[]): Promise<Load[]> {
+  async searchAvailableLoads(value: TruckStopLoad[], searchAvailable: SearchAvailableLoadDto): Promise<Load[]> {
     const loads: Load[] = [];
     if (!value || !value.length) return loads;
     for (const load of value) {
@@ -39,6 +41,9 @@ export class TruckStopOutputTransformer {
       if (!deliveryInfo) continue;
       loadModel.pickupStop = {
         address: deliveryInfo.originalPlaceName,
+        city: load.OriginCity,
+        state: load.OriginState,
+        county: load.OriginCountry,
         coordinates: {
           latitude: deliveryInfo?.originalCoordinates?.length > 1 ? deliveryInfo?.originalCoordinates[1] : 0,
           longitude: deliveryInfo?.originalCoordinates?.length > 1 ? deliveryInfo?.originalCoordinates[0] : 0
@@ -47,13 +52,33 @@ export class TruckStopOutputTransformer {
           startTime: load.PickupDate === 'DAILY' ? load.PickupDate : `${load.PickupDate} ${load.PickupTime}`
         }
       };
+
       loadModel.deliveryStop = {
         address: deliveryInfo.destinationPlaceName,
+        city: load.DestinationCity,
+        state: load.DestinationState,
+        county: load.DestinationCountry,
         coordinates: {
           latitude: deliveryInfo?.destinationCoordinates?.length > 1 ? deliveryInfo?.destinationCoordinates[1] : 0,
           longitude: deliveryInfo?.destinationCoordinates?.length > 1 ? deliveryInfo?.destinationCoordinates[0] : 0
         }
       };
+      let deliveryDate = '';
+      if (load.DeliveryDate && load.DeliveryTime) {
+        deliveryDate = `${load.DeliveryDate} ${load.DeliveryTime}`;
+      }
+      if (deliveryDate) {
+        if (searchAvailable.stopPoints[1].stopDate) {
+          let toDate = dayjs(searchAvailable.stopPoints[1].stopDate.from).add(1, 'day').format();
+          if (searchAvailable.stopPoints[1].stopDate.to) {
+            toDate = searchAvailable.stopPoints[1].stopDate.to;
+          }
+          if (dayjs(deliveryDate).isAfter(dayjs(toDate))) continue;
+          loadModel.deliveryStop.appointment = {
+            startTime: deliveryDate
+          };
+        }
+      }
       loadModel.driveDistance = deliveryInfo?.estimationDistance ? +deliveryInfo?.estimationDistance.toFixed(2) : 0;
       loadModel.distance = loadModel.driveDistance ?? loadModel.flyDistance;
       loadModel.distanceUnit = 'Miles';
