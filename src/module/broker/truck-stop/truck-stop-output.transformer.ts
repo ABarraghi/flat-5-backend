@@ -9,6 +9,7 @@ import { Loc } from '@core/util/loc';
 import { MapboxService } from '@module/broker/service/mapbox.service';
 import { PriceService } from '@module/broker/service/price.service';
 import { Logging } from '@core/logger/logging.service';
+import { SearchAvailableLoadDto } from '@module/load/validation/search-available-load.dto';
 
 @Injectable()
 export class TruckStopOutputTransformer {
@@ -17,15 +18,15 @@ export class TruckStopOutputTransformer {
     private priceService: PriceService
   ) {}
 
-  async searchAvailableLoads(value: TruckStopLoad[]): Promise<Load[]> {
+  async searchAvailableLoads(value: TruckStopLoad[], searchAvailableLoadDto: SearchAvailableLoadDto): Promise<Load[]> {
     const loads: Load[] = [];
     if (!value || !value.length) return loads;
     for (const load of value) {
       const loadModel = new Load();
       loadModel.broker = 'truckStop';
       loadModel.loadId = load.ID.toString();
-      loadModel.originDeadhead = -1;
-      loadModel.destinationDeadhead = -1;
+      loadModel.originDeadhead = null;
+      loadModel.destinationDeadhead = null;
 
       const input: TruckStopDeliveryAddressInfo = {
         originCity: load.OriginCity,
@@ -54,7 +55,17 @@ export class TruckStopOutputTransformer {
           longitude: deliveryInfo?.destinationCoordinates?.length > 1 ? deliveryInfo?.destinationCoordinates[0] : 0
         }
       };
+
+      loadModel.originDeadhead = Loc.distanceInMiles(
+        searchAvailableLoadDto.stopPoints[0].location.coordinates,
+        loadModel.pickupStop.coordinates
+      );
+      loadModel.destinationDeadhead = Loc.distanceInMiles(
+        loadModel.deliveryStop.coordinates,
+        searchAvailableLoadDto.stopPoints[1].location.coordinates
+      );
       loadModel.driveDistance = deliveryInfo?.estimationDistance ? +deliveryInfo?.estimationDistance.toFixed(2) : 0;
+      loadModel.flyDistance = Loc.distanceInMiles(loadModel.pickupStop.coordinates, loadModel.deliveryStop.coordinates);
       loadModel.distance = loadModel.driveDistance ?? loadModel.flyDistance;
       loadModel.distanceUnit = 'Miles';
       loadModel.duration = deliveryInfo?.estimationDurations ? +deliveryInfo?.estimationDurations.toFixed(2) : 0;

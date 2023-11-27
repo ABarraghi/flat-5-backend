@@ -98,7 +98,7 @@ export class RouteInfo {
   returnAt?: string;
   deadhead?: number;
   directions?: string;
-  type: 'standard' | 'enRoute' | 'routeMyTrucks' | 'notValidYet';
+  type: 'standard' | 'enRoute' | 'routeMyTruck' | 'notValidYet';
   differInfo?: {
     distance?: number;
     duration?: number;

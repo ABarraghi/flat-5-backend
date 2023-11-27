@@ -33,8 +33,6 @@ export class CoyoteInputTransformer {
       input.origin.appointment = {
         appointmentStartDateTime: value.stopPoints[0].stopDate.from,
         appointmentEndDateTime: dayjs(value.stopPoints[0].stopDate.from).add(1, 'day').format()
-        // appointmentStartDateTime: '2023-11-14T14:00:00-05:00',
-        // appointmentEndDateTime: '2023-11-14T12:00:00-05:00'
       };
 
       if (value.stopPoints[0].stopDate.to) {
@@ -54,13 +52,13 @@ export class CoyoteInputTransformer {
       };
 
       if (value.stopPoints[1].stopDate) {
-        input.origin.appointment = {
+        input.destination.appointment = {
           appointmentStartDateTime: value.stopPoints[1].stopDate.from,
           appointmentEndDateTime: dayjs(value.stopPoints[1].stopDate.from).add(1, 'day').format()
         };
 
         if (value.stopPoints[1].stopDate.to) {
-          input.origin.appointment.appointmentEndDateTime = value.stopPoints[1].stopDate.to;
+          input.destination.appointment.appointmentEndDateTime = value.stopPoints[1].stopDate.to;
         }
       }
     }
