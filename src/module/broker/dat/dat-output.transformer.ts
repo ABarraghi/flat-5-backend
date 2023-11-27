@@ -57,6 +57,7 @@ export class DatOutputTransformer {
             loadModel.deliveryStop.coordinates
           );
         }
+        // Todo: need to check method: AIR or ROAD
         loadModel.originDeadhead =
           match.originDeadheadMiles.miles ??
           Loc.distanceInMiles(

@@ -60,7 +60,7 @@ export class LoadService {
     loads.push(...coyoteLoads, ...datLoads, ...truckStopLoads);
     loads.forEach(load => {
       load.keyByPoints = loadKeyByPoints;
-      load.stopPoints = searchAvailableLoadDto.stopPoints;
+      load.stopPoints = searchAvailableLoadDto.stopPoints.slice();
     });
 
     return loads;
@@ -152,8 +152,14 @@ export class LoadService {
 
     searchAvailableLoadDto.stopPoints.forEach(stopPoint => {
       stopPoint.radius *= 1.7;
+      console.log(stopPoint.radius);
     });
     const loadsInEachDistance: Load[][] = await this.searchAvailableLoads(searchAvailableLoadDto);
+    const reversedRadiusStopPoints = searchAvailableLoadDto.stopPoints.map(stopPoint => {
+      stopPoint.radius /= 1.7;
+
+      return stopPoint;
+    });
     const loadsForRoutes: Load[][] = generateCombinations(loadsInEachDistance);
     for (const loadsForRoute of loadsForRoutes) {
       if (loadsForRoute.length === 0) continue;
@@ -199,13 +205,12 @@ export class LoadService {
           routeInfo.type = 'notValidYet';
         }
 
-        load.stopPoints.forEach(stopPoint => {
-          stopPoint.radius /= 1.7;
-        });
+        load.stopPoints = reversedRadiusStopPoints;
       });
       if (routeInfo.type === 'enRoute') {
+        // Should: double check this logic
+        // distance is too long more than standard
         if (routeInfo.distance > routeInfo.flyDistance * 1.5) {
-          // Should: double check this logic
           continue;
         }
         searchAvailableLoadsResponse.routes.push(routeInfo);
