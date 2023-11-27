@@ -16,6 +16,18 @@ export class TruckStopInputTransformer {
     flat_or_van: 'FV'
   };
 
+  getDateInRange(from: string, to: string): string[] {
+    const dateRange = [];
+    const fromDate = dayjs(from);
+    const toDate = dayjs(to);
+    const diff = toDate.diff(fromDate, 'day');
+    for (let i = 0; i < diff; i++) {
+      dateRange.push(fromDate.add(i, 'day').format());
+    }
+
+    return dateRange;
+  }
+
   searchAvailableLoads(value: SearchAvailableLoadDto): TruckStopInput {
     const input = new TruckStopInput();
     let originLatitude = 0;
@@ -61,18 +73,10 @@ export class TruckStopInputTransformer {
         toDate = value.stopPoints[0].stopDate.to;
       }
       pickupDates.push(fromDate);
+      const getDateInRange = this.getDateInRange(fromDate, toDate);
+      pickupDates.push(...getDateInRange);
       pickupDates.push(toDate);
     }
-    if (value.stopPoints[1].stopDate) {
-      const fromDate = value.stopPoints[1].stopDate.from;
-      let toDate = dayjs(value.stopPoints[1].stopDate.from).add(1, 'day').format();
-      if (value.stopPoints[1].stopDate.to) {
-        toDate = value.stopPoints[1].stopDate.to;
-      }
-      pickupDates.push(fromDate);
-      pickupDates.push(toDate);
-    }
-    // input.equipmentType = (value.equipmentType as TruckStopEquipmentTypes) ?? 'VR';
     input.equipmentType = (this.EQUIPMENT_TYPES[value.equipmentType] as TruckStopEquipmentTypes) ?? 'VR';
     input.loadType = 'Full';
     if (pickupDates.length > 0) {
