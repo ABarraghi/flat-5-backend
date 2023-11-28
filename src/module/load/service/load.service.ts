@@ -152,7 +152,6 @@ export class LoadService {
 
     searchAvailableLoadDto.stopPoints.forEach(stopPoint => {
       stopPoint.radius *= 1.7;
-      console.log(stopPoint.radius);
     });
     const loadsInEachDistance: Load[][] = await this.searchAvailableLoads(searchAvailableLoadDto);
     const reversedRadiusStopPoints = searchAvailableLoadDto.stopPoints.map(stopPoint => {
@@ -160,6 +159,7 @@ export class LoadService {
 
       return stopPoint;
     });
+
     const loadsForRoutes: Load[][] = generateCombinations(loadsInEachDistance);
     for (const loadsForRoute of loadsForRoutes) {
       if (loadsForRoute.length === 0) continue;
@@ -191,6 +191,7 @@ export class LoadService {
         }
       }
       loadsForRoute.forEach(load => {
+        load.type = 'standard';
         // Todo: need to recalculate these distance
         routeInfo.driveDistance +=
           load.destinationDeadhead + load.destinationDeadhead + load.driveDistance ?? load.flyDistance ?? 0;
@@ -198,14 +199,15 @@ export class LoadService {
         routeInfo.duration += load.duration;
         routeInfo.amount += load.amount;
         routeInfo.deadhead += load.originDeadhead + load.destinationDeadhead;
+        load.stopPoints = reversedRadiusStopPoints;
 
         if (this.isEnRouteLoad(load)) {
+          load.type = 'enRoute';
           routeInfo.type = 'enRoute';
         } else if (!this.isStandardLoad(load)) {
           routeInfo.type = 'notValidYet';
+          load.type = 'invalid';
         }
-
-        load.stopPoints = reversedRadiusStopPoints;
       });
       if (routeInfo.type === 'enRoute') {
         // Should: double check this logic
