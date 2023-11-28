@@ -68,6 +68,7 @@ export class Load {
     phone?: string;
     fax?: string;
   };
+  type: 'standard' | 'enRoute' | 'invalid';
 }
 
 export class BookingLoad {
