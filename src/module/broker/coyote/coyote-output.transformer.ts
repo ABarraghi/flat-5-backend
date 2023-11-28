@@ -6,6 +6,7 @@ import {
   CoyoteSearchLoadResponse
 } from '@module/broker/interface/coyote/coyote-response.interface';
 import { Loc } from '@core/util/loc';
+import { SearchAvailableLoadDto } from '@module/load/validation/search-available-load.dto';
 
 @Injectable()
 export class CoyoteOutputTransformer {
@@ -15,13 +16,15 @@ export class CoyoteOutputTransformer {
     F: 'Flatbed'
   };
 
-  searchAvailableLoads(value: CoyoteSearchLoadResponse): Load[] {
+  searchAvailableLoads(value: CoyoteSearchLoadResponse, searchAvailableLoadDto: SearchAvailableLoadDto): Load[] {
     const loads: Load[] = [];
     if (!value || !value.loads || !value.loads.length) return loads;
     value.loads.forEach(load => {
       const loadModel = new Load();
       loadModel.broker = 'coyote';
       loadModel.loadId = load.loadId.toString();
+      loadModel.originDeadhead = null;
+      loadModel.destinationDeadhead = null;
       const pickupStop = load.stops.find(stop => stop.stopType === 'Pickup');
       loadModel.pickupStop = {
         address: this.buildAddress(pickupStop.facility.address),
@@ -40,6 +43,10 @@ export class CoyoteOutputTransformer {
         },
         notes: pickupStop.stopDetails.stopNotes
       };
+      loadModel.originDeadhead = Loc.distanceInMiles(
+        searchAvailableLoadDto.stopPoints[0].location.coordinates,
+        loadModel.pickupStop.coordinates
+      );
       const deliveryStop = load.stops.find(stop => stop.stopType === 'Delivery');
       if (deliveryStop) {
         loadModel.deliveryStop = {
@@ -57,6 +64,11 @@ export class CoyoteOutputTransformer {
         loadModel.flyDistance = Loc.distanceInMiles(
           loadModel.pickupStop.coordinates,
           loadModel.deliveryStop.coordinates
+        );
+
+        loadModel.destinationDeadhead = Loc.distanceInMiles(
+          loadModel.deliveryStop.coordinates,
+          searchAvailableLoadDto.stopPoints[1].location.coordinates
         );
       }
       loadModel.amount = load.loadDetails.rate.value;

@@ -21,7 +21,7 @@ export class Loc {
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
     // Calculate the distance
-    return R * c;
+    return Math.round(R * c * 100) / 100;
   }
 
   static distanceInMiles(origin: GeoCoordinates, destination: GeoCoordinates): number {

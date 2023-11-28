@@ -3,6 +3,7 @@ import { Load } from '@module/broker/interface/flat-5/load.interface';
 import { DATPlace, DATRetrieveAssetsResponse } from '@module/broker/interface/dat/dat-response.interface';
 import { PriceService } from '@module/broker/service/price.service';
 import { Loc } from '@core/util/loc';
+import { SearchAvailableLoadDto } from '@module/load/validation/search-available-load.dto';
 
 @Injectable()
 export class DatOutputTransformer {
@@ -14,7 +15,7 @@ export class DatOutputTransformer {
     F: 'Flatbed'
   };
 
-  searchAvailableLoads(value: DATRetrieveAssetsResponse): Load[] {
+  searchAvailableLoads(value: DATRetrieveAssetsResponse, searchAvailableLoadDto: SearchAvailableLoadDto): Load[] {
     const loads: Load[] = [];
     if (!value || !value.matches || !value.matches.length) return loads;
     value.matches.forEach(match => {
@@ -56,8 +57,20 @@ export class DatOutputTransformer {
             loadModel.deliveryStop.coordinates
           );
         }
-        loadModel.originDeadhead = match.originDeadheadMiles.miles;
-        loadModel.destinationDeadhead = match.destinationDeadheadMiles.miles;
+        // Todo: need to check method: AIR or ROAD
+        loadModel.originDeadhead =
+          match.originDeadheadMiles.miles ??
+          Loc.distanceInMiles(
+            searchAvailableLoadDto.stopPoints[0].location.coordinates,
+            loadModel.pickupStop.coordinates
+          );
+        loadModel.destinationDeadhead =
+          match.destinationDeadheadMiles.miles ?? loadModel.deliveryStop
+            ? Loc.distanceInMiles(
+                loadModel.deliveryStop.coordinates,
+                searchAvailableLoadDto.stopPoints[1].location.coordinates
+              )
+            : null;
         loadModel.driveDistance = match.tripLength.miles;
         loadModel.distance = loadModel.driveDistance ?? loadModel.flyDistance;
         loadModel.distanceUnit = 'Miles';

@@ -115,9 +115,4 @@ export class SearchAvailableLoadDto extends BaseSearchDto {
 
   @IsOptional()
   shipmentFormat: string;
-
-  @IsOptional()
-  isRestrictBusinessLogic: boolean;
-  @IsOptional()
-  allowEmptyLoads: boolean;
 }

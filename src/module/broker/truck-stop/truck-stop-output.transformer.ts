@@ -19,7 +19,7 @@ export class TruckStopOutputTransformer {
     private priceService: PriceService
   ) {}
 
-  async searchAvailableLoads(value: TruckStopLoad[], searchAvailable: SearchAvailableLoadDto): Promise<Load[]> {
+  async searchAvailableLoads(value: TruckStopLoad[], searchAvailableLoadDto: SearchAvailableLoadDto): Promise<Load[]> {
     const loads: Load[] = [];
     if (!value || !value.length) return loads;
     for (const load of value) {
@@ -63,15 +63,25 @@ export class TruckStopOutputTransformer {
           longitude: deliveryInfo?.destinationCoordinates?.length > 1 ? deliveryInfo?.destinationCoordinates[0] : 0
         }
       };
+
+      loadModel.originDeadhead = Loc.distanceInMiles(
+        searchAvailableLoadDto.stopPoints[0].location.coordinates,
+        loadModel.pickupStop.coordinates
+      );
+      loadModel.destinationDeadhead = Loc.distanceInMiles(
+        loadModel.deliveryStop.coordinates,
+        searchAvailableLoadDto.stopPoints[1].location.coordinates
+      );
       let deliveryDate = '';
       if (load.DeliveryDate && load.DeliveryTime) {
+        // need convert to ISO
         deliveryDate = `${load.DeliveryDate} ${load.DeliveryTime}`;
       }
       if (deliveryDate) {
-        if (searchAvailable.stopPoints[1].stopDate) {
-          let toDate = dayjs(searchAvailable.stopPoints[1].stopDate.from).add(1, 'day').format();
-          if (searchAvailable.stopPoints[1].stopDate.to) {
-            toDate = searchAvailable.stopPoints[1].stopDate.to;
+        if (searchAvailableLoadDto.stopPoints[1].stopDate) {
+          let toDate = dayjs(searchAvailableLoadDto.stopPoints[1].stopDate.from).add(1, 'day').format();
+          if (searchAvailableLoadDto.stopPoints[1].stopDate.to) {
+            toDate = searchAvailableLoadDto.stopPoints[1].stopDate.to;
           }
           if (dayjs(deliveryDate).isAfter(dayjs(toDate))) continue;
           loadModel.deliveryStop.appointment = {
@@ -80,6 +90,7 @@ export class TruckStopOutputTransformer {
         }
       }
       loadModel.driveDistance = deliveryInfo?.estimationDistance ? +deliveryInfo?.estimationDistance.toFixed(2) : 0;
+      loadModel.flyDistance = Loc.distanceInMiles(loadModel.pickupStop.coordinates, loadModel.deliveryStop.coordinates);
       loadModel.distance = loadModel.driveDistance ?? loadModel.flyDistance;
       loadModel.distanceUnit = 'Miles';
       loadModel.duration = deliveryInfo?.estimationDurations ? +deliveryInfo?.estimationDurations.toFixed(2) : 0;
