@@ -103,16 +103,15 @@ export class SearchAvailableLoadDto extends BaseSearchDto {
   stopPoints: StopPointDto[];
 
   @IsOptional()
-  @IsIn(['standard', 'enRoute'])
-  type: 'standard' | 'enRoute' = 'standard';
-
-  @IsOptional()
-  returnHome: boolean;
-
-  @IsOptional()
   @IsIn(['dry_van', 'reefer', 'flatbed', 'dry_van_or_reefer', 'flat_or_van'])
   equipmentType: string;
 
   @IsOptional()
   shipmentFormat: string;
+
+  @IsOptional()
+  brokers: ('coyote' | 'dat' | 'truck_stop')[];
+
+  @IsOptional()
+  isReturnOrigin: boolean;
 }
