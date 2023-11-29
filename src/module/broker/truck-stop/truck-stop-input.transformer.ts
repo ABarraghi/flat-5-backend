@@ -38,11 +38,18 @@ export class TruckStopInputTransformer {
     if (value.stopPoints[0].location.coordinates.longitude) {
       originLongitude = Math.floor(value.stopPoints[0].location.coordinates.longitude * 100);
     }
+    let originRadius = value.stopPoints[0].radius || 25;
+    if (value.stopPoints[0].radius && value.stopPoints[0].radius < 25) {
+      originRadius = 25;
+    } else if (value.stopPoints[0].radius && value.stopPoints[0].radius > 300) {
+      originRadius = 300;
+    }
+
     input.origin = {
       city: value.stopPoints[0].location.city || '',
       state: value.stopPoints[0].location.state || '',
       country: value.stopPoints[0].location.country || '',
-      range: value.stopPoints[0].radius || 25,
+      range: originRadius,
       latitude: originLatitude,
       longitude: originLongitude
     };
@@ -55,11 +62,18 @@ export class TruckStopInputTransformer {
       if (value.stopPoints[1].location?.coordinates?.longitude) {
         destinationLongitude = Math.floor(value.stopPoints[1].location.coordinates.longitude * 100);
       }
+      let destinationRadius = value.stopPoints[1].radius || 25;
+      if (value.stopPoints[1].radius && value.stopPoints[1].radius < 25) {
+        destinationRadius = 25;
+      } else if (value.stopPoints[1].radius && value.stopPoints[1].radius > 300) {
+        destinationRadius = 300;
+      }
+
       input.destination = {
         city: value.stopPoints[1].location.city || '',
         state: value.stopPoints[1].location.state || '',
         country: value.stopPoints[1].location.country || '',
-        range: value.stopPoints[1].radius || 25,
+        range: destinationRadius,
         latitude: destinationLatitude,
         longitude: destinationLongitude
       };
