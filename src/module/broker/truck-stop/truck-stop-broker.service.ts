@@ -141,6 +141,7 @@ export class TruckStopBrokerService {
 
   async searchMultipleDetailsLoads(input: TruckStopInput): Promise<TruckStopLoad[]> {
     const xmlStringRequest = this.generateSearchRequest(input, 'GetMultipleLoadDetailResults');
+    console.log('xmlStringRequest: ', xmlStringRequest);
     const request = this.httpService
       .post(this.truckStopConfig.urlWebServices, xmlStringRequest, {
         headers: {
@@ -160,9 +161,9 @@ export class TruckStopBrokerService {
       const multipleLoadDetail =
         jsonResponses.Envelope.Body.GetMultipleLoadDetailResultsResponse.GetMultipleLoadDetailResultsResult;
       if (multipleLoadDetail.Errors?.Error?.ErrorMessage) {
-        throw new Error(multipleLoadDetail.Errors.Error);
+        throw new Error(multipleLoadDetail.Errors.Error.ErrorMessage);
       }
-      let truckStopLoad = multipleLoadDetail.DetailResults.MultipleLoadDetailResult;
+      let truckStopLoad = multipleLoadDetail.DetailResults?.MultipleLoadDetailResult;
       if (!truckStopLoad) {
         return [];
       }
