@@ -34,26 +34,26 @@ export class LocationDto {
   @IsOptional()
   @ValidateNested()
   @Type(() => CoordinateDto)
-  coordinates: CoordinateDto;
+  coordinates?: CoordinateDto;
 
   @IsOptional()
   @IsNotEmpty()
   @IsString()
-  city: string;
+  city?: string;
 
   @IsOptional()
   @IsNotEmpty()
   @IsString()
-  state: string;
+  state?: string;
 
   @IsOptional()
   @IsNotEmpty()
   @IsString()
-  country: string;
+  country?: string;
 
   @IsOptional()
   @IsNotEmpty()
-  postalCode: string;
+  postalCode?: string;
 }
 
 export class StopDate {
@@ -75,23 +75,27 @@ export class StopDate {
 export class StopPointDto {
   @ValidateNested()
   @Type(() => LocationDto)
-  location: LocationDto;
+  location?: LocationDto;
 
   @ValidateNested()
   @Type(() => StopDate)
   @IsOptional()
-  stopDate: StopDate;
+  stopDate?: StopDate;
 
   @IsBoolean()
   @IsOptional()
-  hadLoad: boolean;
+  hadLoad?: boolean;
 
   @IsOptional()
   @IsNumber()
-  radius: number;
+  radius?: number;
 
   @IsOptional()
-  unit: 'Miles' | 'Kilometers' = DISTANCE_UNIT_DEFAULT;
+  unit?: 'Miles' | 'Kilometers' = DISTANCE_UNIT_DEFAULT;
+
+  @IsBoolean()
+  @IsOptional()
+  isOpen?: boolean;
 }
 
 export class SearchAvailableLoadDto extends BaseSearchDto {

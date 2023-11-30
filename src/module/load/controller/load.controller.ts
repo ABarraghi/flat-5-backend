@@ -18,6 +18,11 @@ export class LoadController {
     return this.loadService.searchEnRoute(searchAvailableLoadDto);
   }
 
+  @Post('route-my-truck')
+  routeMyTruck(@Body() searchAvailableLoadDto: SearchAvailableLoadDto) {
+    return this.loadService.routeMyTruck(searchAvailableLoadDto);
+  }
+
   @Get(':broker/:loadId')
   searchLoadDetail(@Param('broker') broker: ApiBrokers, @Param('loadId') loadId: string) {
     if (isApiBroker(broker)) {

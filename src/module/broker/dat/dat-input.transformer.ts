@@ -76,21 +76,27 @@ export class DatInputTransformer {
       }
     }
     if (value.stopPoints[1]) {
-      criteria.lane.destination = {
-        place: {
-          latitude: value.stopPoints[1].location.coordinates.latitude,
-          longitude: value.stopPoints[1].location.coordinates.longitude,
-          city: value.stopPoints[0].location.city ?? '',
-          stateProv: (value.stopPoints[0].location.state ?? '') as DATState,
-          county: value.stopPoints[0].location.country ?? '',
-          postalCode: value.stopPoints[0].location.postalCode ?? ''
+      if (value.stopPoints[1].isOpen) {
+        criteria.lane.destination = {
+          open: {}
+        };
+      } else {
+        criteria.lane.destination = {
+          place: {
+            latitude: value.stopPoints[1].location.coordinates.latitude,
+            longitude: value.stopPoints[1].location.coordinates.longitude,
+            city: value.stopPoints[0].location.city ?? '',
+            stateProv: (value.stopPoints[0].location.state ?? '') as DATState,
+            county: value.stopPoints[0].location.country ?? '',
+            postalCode: value.stopPoints[0].location.postalCode ?? ''
+          }
+        };
+        if (value.stopPoints[1].radius) {
+          criteria.maxDestinationDeadheadMiles =
+            value.stopPoints[1].unit === 'Miles'
+              ? value.stopPoints[1].radius
+              : Loc.kilometersToMiles(value.stopPoints[1].radius);
         }
-      };
-      if (value.stopPoints[1].radius) {
-        criteria.maxDestinationDeadheadMiles =
-          value.stopPoints[1].unit === 'Miles'
-            ? value.stopPoints[1].radius
-            : Loc.kilometersToMiles(value.stopPoints[1].radius);
       }
     }
 

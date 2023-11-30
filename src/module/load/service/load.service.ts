@@ -1,8 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { SearchAvailableLoadDto } from '@module/load/validation/search-available-load.dto';
+import { SearchAvailableLoadDto, StopPointDto } from '@module/load/validation/search-available-load.dto';
 import { ConfigService } from '@nestjs/config';
 import { CoyoteBrokerService } from '@module/broker/coyote/coyote-broker.service';
-import { Load, RouteInfo, SearchAvailableLoadsResponse } from '@module/broker/interface/flat-5/load.interface';
+import {
+  FindLoadContext,
+  LinkedLoad,
+  Load,
+  RouteInfo,
+  SearchAvailableLoadsResponse
+} from '@module/broker/interface/flat-5/load.interface';
 import { ApiBrokers } from '@module/broker/interface/flat-5/common.interface';
 import { BookLoadDto } from '@module/load/validation/book-load.dto';
 import { InjectModel } from '@nestjs/mongoose';
@@ -24,6 +30,8 @@ import * as dayjs from 'dayjs';
 @Injectable()
 export class LoadService {
   maximumDeadheadMilesRate = 0.3;
+  count = 0;
+  defaultRadius = 100;
 
   constructor(
     private configService: ConfigService,
@@ -39,18 +47,23 @@ export class LoadService {
     @InjectModel(Booking.name) private bookingModel: Model<Booking>
   ) {}
 
-  async searchAvailableLoadsBetween2Points(searchAvailableLoadDto: SearchAvailableLoadDto): Promise<Load[] | any> {
+  async searchAvailableLoadsBetween2Points(
+    searchAvailableLoadDto: SearchAvailableLoadDto,
+    loadKeyByPoints: string = null
+  ): Promise<Load[] | any> {
     if (searchAvailableLoadDto.stopPoints.length > 2) {
       searchAvailableLoadDto.stopPoints = searchAvailableLoadDto.stopPoints.slice(0, 2);
     }
-    const loadKeyByPoints =
-      searchAvailableLoadDto.stopPoints[0].location.coordinates.latitude.toString() +
-      '_' +
-      searchAvailableLoadDto.stopPoints[0].location.coordinates.longitude.toString() +
-      '_' +
-      searchAvailableLoadDto.stopPoints[1].location.coordinates.latitude.toString() +
-      '_' +
-      searchAvailableLoadDto.stopPoints[1].location.coordinates.longitude.toString();
+    if (!loadKeyByPoints) {
+      loadKeyByPoints =
+        searchAvailableLoadDto.stopPoints[0].location.coordinates.latitude.toString() +
+        '_' +
+        searchAvailableLoadDto.stopPoints[0].location.coordinates.longitude.toString() +
+        '_' +
+        searchAvailableLoadDto.stopPoints[1].location.coordinates.latitude.toString() +
+        '_' +
+        searchAvailableLoadDto.stopPoints[1].location.coordinates.longitude.toString();
+    }
     const loads: Load[] = [];
     let brokers = [];
     if (searchAvailableLoadDto.brokers) {
@@ -230,6 +243,226 @@ export class LoadService {
         searchAvailableLoadsResponse.routes.push(routeInfo);
       }
     }
+
+    return searchAvailableLoadsResponse;
+  }
+
+  async findLoadsForRouteMyTruck(
+    searchAvailableLoadDto: SearchAvailableLoadDto,
+    findLoadContext?: FindLoadContext
+  ): Promise<LinkedLoad[] | any> {
+    if (!findLoadContext) {
+      findLoadContext = new FindLoadContext({
+        stopPoints: searchAvailableLoadDto.stopPoints,
+        loadKeyByPoints:
+          searchAvailableLoadDto.stopPoints[0].location.coordinates.latitude.toString() +
+          '_' +
+          searchAvailableLoadDto.stopPoints[0].location.coordinates.longitude.toString() +
+          '_' +
+          searchAvailableLoadDto.stopPoints[1].location.coordinates.latitude.toString() +
+          '_' +
+          searchAvailableLoadDto.stopPoints[1].location.coordinates.longitude.toString()
+      });
+    }
+    const targetStopPoint = findLoadContext.stopPoints[1];
+    const targetDate = dayjs(targetStopPoint.stopDate.to);
+    const newSearchAvailableLoadDto = {
+      ...searchAvailableLoadDto,
+      stopPoints: [
+        findLoadContext.stopPoints[0],
+        findLoadContext.isLastStop
+          ? findLoadContext.stopPoints[1]
+          : {
+              ...findLoadContext.stopPoints[1],
+              isOpen: true
+            }
+      ]
+    };
+    const loads = await this.searchAvailableLoadsBetween2Points(newSearchAvailableLoadDto);
+    const validLoads = loads.filter(load => {
+      if (load.deliveryStop && load.deliveryStop.appointment && load.deliveryStop.appointment.endTime) {
+        const deliveryDate = dayjs(load.deliveryStop.appointment.endTime);
+        const remainingDays = targetDate.diff(deliveryDate, 'day');
+        const remainingDistance = remainingDays * 600;
+
+        const distanceToTargetPoint = Loc.distanceInMiles(
+          targetStopPoint.location.coordinates,
+          load.deliveryStop.coordinates
+        );
+        if (findLoadContext.isLastStop) {
+          // less than 50 miles to go home
+
+          return remainingDistance < 50;
+        }
+
+        return distanceToTargetPoint < remainingDistance;
+      } else {
+        // if (load.deliveryStop && load.deliveryStop.coordinates) {
+        // just assuming that driver can drive 600 miles per day
+        const distanceForThisLoad = load.originDeadhead + load.driveDistance + load.destinationDeadhead;
+        const daysForThisLoad = Math.round(distanceForThisLoad / 600);
+        const remainingDays = findLoadContext.remainingDays - daysForThisLoad;
+        const remainingDistance = remainingDays * 600;
+
+        const distanceToTargetPoint = Loc.distanceInMiles(
+          targetStopPoint.location.coordinates,
+          load.deliveryStop.coordinates
+        );
+        if (findLoadContext.isLastStop) {
+          // less than 50 miles to go home
+
+          return remainingDistance < 50;
+        }
+
+        return distanceToTargetPoint < remainingDistance;
+      }
+    });
+    console.log(validLoads.length);
+    let count = 0;
+    const result = [];
+    for (const load of validLoads) {
+      const maxFor = searchAvailableLoadDto.brokers.includes('dat') ? 1 : 4;
+      if (count > maxFor) {
+        break;
+      }
+      count++;
+      const nextLoads = new LinkedLoad();
+      nextLoads.current = load;
+      nextLoads.next = [];
+      let next = [];
+      const newStopPoint: StopPointDto = {
+        location: {
+          coordinates: load.deliveryStop.coordinates
+        },
+        radius: 100
+      };
+      let remainingDistance = 0;
+      let remainingDays = 0;
+      let newFindLoadContext = null;
+      let deliveryDate = null;
+      if (load.deliveryStop && load.deliveryStop.appointment && load.deliveryStop.appointment.endTime) {
+        newStopPoint['stopDate'] = {
+          from: load.deliveryStop.appointment.endTime,
+          to: dayjs(load.deliveryStop.appointment.endTime).add(1, 'day').format()
+        };
+        deliveryDate = dayjs(load.deliveryStop.appointment.endTime);
+        remainingDays = targetDate.diff(deliveryDate, 'day');
+        remainingDistance = remainingDays * 600;
+        newFindLoadContext = new FindLoadContext({
+          ...findLoadContext,
+          stopPoints: [newStopPoint, targetStopPoint],
+          remainingDays: remainingDays,
+          remainingDistance: remainingDistance
+        });
+      } else {
+        // if (load.deliveryStop && load.deliveryStop.coordinates) {
+        // just assuming that driver can drive 600 miles per day
+        const distanceForThisLoad = load.originDeadhead + load.driveDistance + load.destinationDeadhead;
+        const daysForThisLoad = Math.round(distanceForThisLoad / 600);
+        const remainingDays = findLoadContext.remainingDays - daysForThisLoad;
+        const remainingDistance = remainingDays * 600;
+        newStopPoint.location.city = load.deliveryStop.city;
+        newStopPoint.location.state = load.deliveryStop.state;
+        newFindLoadContext = new FindLoadContext({
+          ...findLoadContext,
+          totalDistance: findLoadContext.totalDistance + distanceForThisLoad,
+          totalDays: findLoadContext.totalDays + distanceForThisLoad,
+          stopPoints: [newStopPoint, targetStopPoint],
+          remainingDays: remainingDays,
+          remainingDistance: remainingDistance
+        });
+      }
+      next = await this.findLoadsForRouteMyTruck(searchAvailableLoadDto, newFindLoadContext);
+      if (next && !next.length && !newFindLoadContext?.isLastStop) {
+        newFindLoadContext.isLastStop = true;
+
+        next = await this.findLoadsForRouteMyTruck(searchAvailableLoadDto, newFindLoadContext);
+      }
+      nextLoads.next = next;
+
+      result.push(nextLoads);
+      break;
+    }
+
+    return result;
+  }
+
+  async routeMyTruck(searchAvailableLoadDto: SearchAvailableLoadDto): Promise<Load[][] | any> {
+    const searchAvailableLoadsResponse = new SearchAvailableLoadsResponse();
+    this.count = 0;
+    searchAvailableLoadDto.stopPoints.forEach(stopPoint => {
+      stopPoint.radius = this.defaultRadius;
+    });
+    if (!searchAvailableLoadDto.brokers || searchAvailableLoadDto.brokers.length > 1) {
+      searchAvailableLoadDto.brokers = ['coyote'];
+    } else if (searchAvailableLoadDto.brokers.includes('truck_stop')) {
+      return [];
+    }
+    const linkedLoads = await this.findLoadsForRouteMyTruck(searchAvailableLoadDto);
+
+    function generatePaths(node: LinkedLoad, path: Load[] = []): Load[][] {
+      path = path.concat(node.current);
+
+      if (!node.next || node.next.length === 0) {
+        return [path]; // Reached a leaf node, return the path
+      }
+
+      let paths: Load[][] = [];
+      for (const child of node.next) {
+        paths = paths.concat(generatePaths(child, path.slice())); // Recursively generate paths for each child
+      }
+
+      return paths;
+    }
+
+    if (!linkedLoads) {
+      searchAvailableLoadsResponse.routes = [];
+
+      return searchAvailableLoadsResponse;
+    }
+    const loadsForRoutes = linkedLoads.flatMap(linkedLoad => generatePaths(linkedLoad));
+
+    const routes: RouteInfo[] = [];
+    for (const loadsForRoute of loadsForRoutes) {
+      if (loadsForRoute.length === 0) continue;
+      const routeInfo: RouteInfo = {
+        stopPoints: searchAvailableLoadDto.stopPoints,
+        flyDistance: 0,
+        driveDistance: 0,
+        distance: 0,
+        distanceUnit: loadsForRoute[0].distanceUnit,
+        duration: 0,
+        durationUnit: loadsForRoute[0].durationUnit,
+        amount: 0,
+        currency: loadsForRoute[0].currency,
+        description: '',
+        returnAt: '',
+        deadhead: 0,
+        directions: '',
+        type: 'routeMyTruck',
+        loads: loadsForRoute,
+        differInfo: null // for now
+      };
+      for (let i = 0; i < searchAvailableLoadDto.stopPoints.length; i++) {
+        if (searchAvailableLoadDto.stopPoints[i + 1]) {
+          routeInfo.flyDistance += Loc.distanceInMiles(
+            searchAvailableLoadDto.stopPoints[i].location.coordinates,
+            searchAvailableLoadDto.stopPoints[i + 1].location.coordinates
+          );
+        }
+      }
+      loadsForRoute.forEach(load => {
+        load.type = 'routeMyTruck';
+        routeInfo.driveDistance +=
+          load.destinationDeadhead + load.destinationDeadhead + load.driveDistance ?? load.flyDistance ?? 0;
+        routeInfo.distance += routeInfo.driveDistance || routeInfo.flyDistance;
+        routeInfo.duration += load.duration;
+        routeInfo.amount += load.amount;
+        routeInfo.deadhead += load.originDeadhead + load.destinationDeadhead;
+      });
+      routes.push(routeInfo);
+    }
+    searchAvailableLoadsResponse.routes = routes;
 
     return searchAvailableLoadsResponse;
   }

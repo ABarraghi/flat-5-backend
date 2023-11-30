@@ -95,7 +95,7 @@ export class TruckStopOutputTransformer {
       loadModel.distanceUnit = 'Miles';
       loadModel.duration = deliveryInfo?.estimationDurations ? +deliveryInfo?.estimationDurations.toFixed(2) : 0;
       loadModel.amount = deliveryInfo?.estimationAmount ? +deliveryInfo?.estimationAmount.toFixed(2) : 0;
-      loadModel.deadheadRate = this.priceService.deadHeadRate;
+      loadModel.deadHeadRate = this.priceService.deadHeadRate;
       loadModel.rate = this.priceService.loadedKilometerRate;
       loadModel.shipperInfo = {
         email: load.TruckCompanyEmail,

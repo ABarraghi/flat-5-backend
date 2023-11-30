@@ -15,7 +15,9 @@ export default registerAs('broker', () => ({
     identityService: process.env.DAT_IDENTITY_SERVICE || 'https://identity.',
     freightService: process.env.DAT_FREIGHT_SERVICE || 'https://freight.',
     serviceAccountEmail: process.env.DAT_SERVICE_ACCOUNT_EMAIL || 'developersupport+noerr@dat.com',
-    serviceAccountPassword: process.env.DAT_SERVICE_ACCOUNT_PASSWORD || 'siE1xth3tSzG0jg'
+    serviceAccountPassword: process.env.DAT_SERVICE_ACCOUNT_PASSWORD || 'siE1xth3tSzG0jg',
+    userLevelUsername: process.env.DAT_USER_LEVEL_USERNAME || 'noerr_test',
+    userLevelPassword: process.env.DAT_USER_LEVEL_PASSWORD || 'noerr_test'
   },
   truckStop: {
     enabled: process.env.TRUCK_STOP_ENABLED !== 'false',
