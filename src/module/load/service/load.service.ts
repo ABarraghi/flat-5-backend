@@ -381,7 +381,6 @@ export class LoadService {
       nextLoads.next = next;
 
       result.push(nextLoads);
-      break;
     }
 
     return result;
