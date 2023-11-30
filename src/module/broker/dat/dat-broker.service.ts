@@ -27,12 +27,13 @@ export class DatBrokerService {
     serviceAccountPassword: string;
     identityService: string;
     freightService: string;
+    userLevelUsername: string;
+    userLevelPassword: string;
   };
   private expireTime: string;
   private accessToken: string;
   private orgExpireTime: string;
   private orgAccessToken: string;
-  private userLevelUsername = 'noerr_test';
 
   constructor(
     private configService: ConfigService,
@@ -79,7 +80,7 @@ export class DatBrokerService {
         .post<DATGetUserTokenResponse>(
           url,
           {
-            username: this.userLevelUsername
+            username: this.datConfig.userLevelUsername
           },
           {
             headers: {

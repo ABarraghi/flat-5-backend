@@ -66,10 +66,12 @@ export class CoyoteOutputTransformer {
           loadModel.deliveryStop.coordinates
         );
 
-        loadModel.destinationDeadhead = Loc.distanceInMiles(
-          loadModel.deliveryStop.coordinates,
-          searchAvailableLoadDto.stopPoints[1].location.coordinates
-        );
+        if (!searchAvailableLoadDto.stopPoints[1].isOpen) {
+          loadModel.destinationDeadhead = Loc.distanceInMiles(
+            loadModel.deliveryStop.coordinates,
+            searchAvailableLoadDto.stopPoints[1].location.coordinates
+          );
+        }
       }
       loadModel.amount = load.loadDetails.rate.value;
       loadModel.currency = load.loadDetails.rate.currencyType;
@@ -104,8 +106,8 @@ export class CoyoteOutputTransformer {
     const loadModel = new Load();
     loadModel.broker = 'coyote';
     loadModel.loadId = value.loadId.toString();
-    loadModel.originDeadhead = -1;
-    loadModel.destinationDeadhead = -1;
+    loadModel.originDeadhead = null;
+    loadModel.destinationDeadhead = null;
     const pickupStop = value.stops.find(stop => stop.stopType === 'Pickup');
     loadModel.pickupStop = {
       address: this.buildAddress(pickupStop.facility.address),

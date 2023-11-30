@@ -9,13 +9,23 @@ export default registerAs('broker', () => ({
     clientSecret: process.env.COYOTE_CLIENT_SECRET || 'QBoz99sMGUZwZnsF',
     grantType: process.env.COYOTE_GRANT_TYPE || 'client_credentials'
   },
+  // coyote: {
+  //   enabled: process.env.COYOTE_ENABLED !== 'false',
+  //   host: process.env.COYOTE_HOST || 'https://api.coyote.com',
+  //   apiPrefix: process.env.COYOTE_API_PREFIX || 'api/v1',
+  //   clientId: process.env.COYOTE_CLIENT_ID || 'NOERRLLC',
+  //   clientSecret: process.env.COYOTE_CLIENT_SECRET || 'cruzZszR5edD88nh',
+  //   grantType: process.env.COYOTE_GRANT_TYPE || 'client_credentials'
+  // },
   dat: {
     enabled: process.env.DAT_ENABLED !== 'false',
     host: process.env.DAT_HOST || 'api.nprod.dat.com',
     identityService: process.env.DAT_IDENTITY_SERVICE || 'https://identity.',
     freightService: process.env.DAT_FREIGHT_SERVICE || 'https://freight.',
     serviceAccountEmail: process.env.DAT_SERVICE_ACCOUNT_EMAIL || 'developersupport+noerr@dat.com',
-    serviceAccountPassword: process.env.DAT_SERVICE_ACCOUNT_PASSWORD || 'siE1xth3tSzG0jg'
+    serviceAccountPassword: process.env.DAT_SERVICE_ACCOUNT_PASSWORD || 'siE1xth3tSzG0jg',
+    userLevelUsername: process.env.DAT_USER_LEVEL_USERNAME || 'noerr_test',
+    userLevelPassword: process.env.DAT_USER_LEVEL_PASSWORD || 'noerr_test'
   },
   truckStop: {
     enabled: process.env.TRUCK_STOP_ENABLED !== 'false',

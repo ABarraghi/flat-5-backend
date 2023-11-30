@@ -1,5 +1,6 @@
 import { ApiBrokers } from '@module/broker/interface/flat-5/common.interface';
 import { StopPointDto } from '@module/load/validation/search-available-load.dto';
+import * as dayjs from 'dayjs';
 
 export const DISTANCE_UNIT_DEFAULT = 'Miles';
 export type GeoCoordinates = {
@@ -34,7 +35,7 @@ export class Load {
   pickupStop: Stop;
   deliveryStop: Stop;
   rate: number;
-  deadheadRate?: number;
+  deadHeadRate?: number;
   amount: number;
   currency: string;
   distance: number;
@@ -120,4 +121,46 @@ export class RouteInfo {
 export class SearchAvailableLoadsResponse {
   routes?: RouteInfo[];
   metadata?: any;
+}
+
+export class FindLoadContextOptions {
+  stopPoints: StopPointDto[];
+  numberOfDays?: number;
+  maxDistance?: number;
+  remainingDistance?: number;
+  remainingDays?: number;
+  isLastStop?: boolean;
+  loadKeyByPoints?: string;
+  totalDistance?: number;
+  totalDays?: number;
+}
+
+export class FindLoadContext {
+  stopPoints: StopPointDto[];
+  numberOfDays: number;
+  maxDistance: number;
+  remainingDistance: number;
+  remainingDays: number;
+  isLastStop: boolean;
+  loadKeyByPoints: string;
+  totalDistance: number;
+  totalDays: number;
+
+  constructor(props: FindLoadContextOptions) {
+    this.stopPoints = props.stopPoints;
+    this.numberOfDays =
+      props.numberOfDays ?? dayjs(this.stopPoints[1].stopDate.to).diff(dayjs(this.stopPoints[0].stopDate.from), 'day');
+    this.maxDistance = props.maxDistance ?? this.numberOfDays * 600;
+    this.remainingDistance = props.remainingDistance ?? this.maxDistance;
+    this.remainingDays = props.remainingDays ?? this.numberOfDays;
+    this.isLastStop = props.isLastStop ?? false;
+    this.loadKeyByPoints = props.loadKeyByPoints ?? null;
+    this.totalDistance = props.totalDistance ?? 0;
+    this.totalDays = props.totalDays ?? 0;
+  }
+}
+
+export class LinkedLoad {
+  current: Load;
+  next: LinkedLoad[];
 }

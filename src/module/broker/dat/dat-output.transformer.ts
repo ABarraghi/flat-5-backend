@@ -64,13 +64,16 @@ export class DatOutputTransformer {
             searchAvailableLoadDto.stopPoints[0].location.coordinates,
             loadModel.pickupStop.coordinates
           );
-        loadModel.destinationDeadhead =
-          match.destinationDeadheadMiles.miles ?? loadModel.deliveryStop
-            ? Loc.distanceInMiles(
-                loadModel.deliveryStop.coordinates,
-                searchAvailableLoadDto.stopPoints[1].location.coordinates
-              )
-            : null;
+        loadModel.destinationDeadhead = null;
+        if (!searchAvailableLoadDto.stopPoints[1].isOpen) {
+          loadModel.destinationDeadhead =
+            match.destinationDeadheadMiles.miles ?? loadModel.deliveryStop
+              ? Loc.distanceInMiles(
+                  loadModel.deliveryStop.coordinates,
+                  searchAvailableLoadDto.stopPoints[1].location.coordinates
+                )
+              : null;
+        }
         loadModel.driveDistance = match.tripLength.miles;
         loadModel.distance = loadModel.driveDistance ?? loadModel.flyDistance;
         loadModel.distanceUnit = 'Miles';
@@ -92,11 +95,11 @@ export class DatOutputTransformer {
         } else {
           if (loadModel.distanceUnit === 'Miles') {
             loadModel.rate = this.priceService.loadedMileRate;
-            loadModel.deadheadRate = this.priceService.deadHeadRate;
+            loadModel.deadHeadRate = this.priceService.deadHeadRate;
             loadModel.amount = this.priceService.getAmount(loadModel.distance, loadModel.originDeadhead);
           } else {
             loadModel.rate = this.priceService.loadedKilometerRate;
-            loadModel.deadheadRate = this.priceService.deadHeadKilometerRate;
+            loadModel.deadHeadRate = this.priceService.deadHeadKilometerRate;
             loadModel.amount = this.priceService.getAmount(
               Loc.kilometersToMiles(loadModel.distance),
               Loc.kilometersToMiles(loadModel.originDeadhead)
