@@ -9,14 +9,6 @@ export default registerAs('broker', () => ({
     clientSecret: process.env.COYOTE_CLIENT_SECRET || 'QBoz99sMGUZwZnsF',
     grantType: process.env.COYOTE_GRANT_TYPE || 'client_credentials'
   },
-  // coyote: {
-  //   enabled: process.env.COYOTE_ENABLED !== 'false',
-  //   host: process.env.COYOTE_HOST || 'https://api.coyote.com',
-  //   apiPrefix: process.env.COYOTE_API_PREFIX || 'api/v1',
-  //   clientId: process.env.COYOTE_CLIENT_ID || 'NOERRLLC',
-  //   clientSecret: process.env.COYOTE_CLIENT_SECRET || 'cruzZszR5edD88nh',
-  //   grantType: process.env.COYOTE_GRANT_TYPE || 'client_credentials'
-  // },
   dat: {
     enabled: process.env.DAT_ENABLED !== 'false',
     host: process.env.DAT_HOST || 'api.nprod.dat.com',
