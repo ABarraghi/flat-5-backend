@@ -278,7 +278,10 @@ export class LoadService {
             }
       ]
     };
-    const loads = await this.searchAvailableLoadsBetween2Points(newSearchAvailableLoadDto);
+    const loads = await this.searchAvailableLoadsBetween2Points(
+      newSearchAvailableLoadDto,
+      findLoadContext.loadKeyByPoints
+    );
     const validLoads = loads.filter(load => {
       if (load.deliveryStop && load.deliveryStop.appointment && load.deliveryStop.appointment.endTime) {
         const deliveryDate = dayjs(load.deliveryStop.appointment.endTime);
@@ -321,7 +324,7 @@ export class LoadService {
     let count = 0;
     const result = [];
     for (const load of validLoads) {
-      const maxFor = searchAvailableLoadDto.brokers.includes('dat') ? 1 : 4;
+      const maxFor = searchAvailableLoadDto.brokers.includes('dat') ? 0 : 4;
       if (count > maxFor) {
         break;
       }
