@@ -8,10 +8,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Booking, BookingSchema } from '@module/load/schema/booking.schema';
 
 @Module({
-  imports: [
-    BrokerModule,
-    MongooseModule.forFeature([{ name: Booking.name, schema: BookingSchema }])
-  ],
+  imports: [BrokerModule, MongooseModule.forFeature([{ name: Booking.name, schema: BookingSchema }])],
   controllers: [LoadController],
   providers: [LoadService]
 })
