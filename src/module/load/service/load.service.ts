@@ -324,7 +324,7 @@ export class LoadService {
     let count = 0;
     const result = [];
     for (const load of validLoads) {
-      const maxFor = searchAvailableLoadDto.brokers.includes('dat') ? 0 : 4;
+      const maxFor = searchAvailableLoadDto.brokers.includes('dat') ? 0 : 2;
       if (count > maxFor) {
         break;
       }
