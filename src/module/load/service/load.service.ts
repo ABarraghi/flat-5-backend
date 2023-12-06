@@ -249,7 +249,9 @@ export class LoadService {
 
   async findLoadsForRouteMyTruck(
     searchAvailableLoadDto: SearchAvailableLoadDto,
-    findLoadContext?: FindLoadContext
+    findLoadContext?: FindLoadContext,
+    loopCount = 0,
+    parentKey = ''
   ): Promise<LinkedLoad[] | any> {
     if (!findLoadContext) {
       findLoadContext = new FindLoadContext({
@@ -282,7 +284,7 @@ export class LoadService {
       newSearchAvailableLoadDto,
       findLoadContext.loadKeyByPoints
     );
-    const validLoads = loads.filter(load => {
+    let validLoads = loads.filter(load => {
       if (load.deliveryStop && load.deliveryStop.appointment && load.deliveryStop.appointment.endTime) {
         const deliveryDate = dayjs(load.deliveryStop.appointment.endTime);
         const remainingDays = targetDate.diff(deliveryDate, 'day');
@@ -320,15 +322,19 @@ export class LoadService {
         return distanceToTargetPoint < remainingDistance;
       }
     });
+    const parents = parentKey.split('_');
     console.log(validLoads.length);
-    let count = 0;
     const result = [];
+    validLoads = validLoads.filter(load => !parents.includes(load.loadId.toString()));
+    if (loopCount > 0) {
+      validLoads = searchAvailableLoadDto.brokers.includes('dat') ? validLoads.slice(0, 1) : validLoads.slice(0, 2);
+    } else {
+      validLoads = searchAvailableLoadDto.brokers.includes('dat') ? validLoads.slice(0, 4) : validLoads.slice(0, 2);
+    }
+
     for (const load of validLoads) {
-      const maxFor = searchAvailableLoadDto.brokers.includes('dat') ? 0 : 2;
-      if (count > maxFor) {
-        break;
-      }
-      count++;
+      const parentNext = parentKey + '_' + load.loadId;
+      loopCount = 1;
       const nextLoads = new LinkedLoad();
       nextLoads.current = load;
       nextLoads.next = [];
@@ -375,11 +381,15 @@ export class LoadService {
           remainingDistance: remainingDistance
         });
       }
-      next = await this.findLoadsForRouteMyTruck(searchAvailableLoadDto, newFindLoadContext);
-      if (next && !next.length && !newFindLoadContext?.isLastStop) {
+      if (parents.length > 4) {
         newFindLoadContext.isLastStop = true;
-
-        next = await this.findLoadsForRouteMyTruck(searchAvailableLoadDto, newFindLoadContext);
+        next = await this.findLoadsForRouteMyTruck(searchAvailableLoadDto, newFindLoadContext, loopCount, parentNext);
+      } else {
+        next = await this.findLoadsForRouteMyTruck(searchAvailableLoadDto, newFindLoadContext, loopCount, parentNext);
+        if (next && !next.length && !newFindLoadContext?.isLastStop) {
+          newFindLoadContext.isLastStop = true;
+          next = await this.findLoadsForRouteMyTruck(searchAvailableLoadDto, newFindLoadContext, loopCount, parentNext);
+        }
       }
       nextLoads.next = next;
 
