@@ -324,7 +324,7 @@ export class LoadService {
     let count = 0;
     const result = [];
     for (const load of validLoads) {
-      const maxFor = searchAvailableLoadDto.brokers.includes('dat') ? 0 : 2;
+      const maxFor = searchAvailableLoadDto.brokers.includes('dat') ? 1 : 3;
       if (count > maxFor) {
         break;
       }
@@ -362,6 +362,12 @@ export class LoadService {
         // just assuming that driver can drive 600 miles per day
         const distanceForThisLoad = load.originDeadhead + load.driveDistance + load.destinationDeadhead;
         const daysForThisLoad = Math.round(distanceForThisLoad / 600);
+        newStopPoint['stopDate'] = {
+          from: dayjs(findLoadContext.stopPoints[0].stopDate.to).add(daysForThisLoad, 'day').format(),
+          to: dayjs(findLoadContext.stopPoints[0].stopDate.to)
+            .add(daysForThisLoad + 1, 'day')
+            .format()
+        };
         const remainingDays = findLoadContext.remainingDays - daysForThisLoad;
         const remainingDistance = remainingDays * 600;
         newStopPoint.location.city = load.deliveryStop.city;
@@ -369,7 +375,7 @@ export class LoadService {
         newFindLoadContext = new FindLoadContext({
           ...findLoadContext,
           totalDistance: findLoadContext.totalDistance + distanceForThisLoad,
-          totalDays: findLoadContext.totalDays + distanceForThisLoad,
+          totalDays: findLoadContext.totalDays + daysForThisLoad,
           stopPoints: [newStopPoint, targetStopPoint],
           remainingDays: remainingDays,
           remainingDistance: remainingDistance
@@ -400,7 +406,15 @@ export class LoadService {
     } else if (searchAvailableLoadDto.brokers.includes('truck_stop')) {
       return [];
     }
-    const linkedLoads = await this.findLoadsForRouteMyTruck(searchAvailableLoadDto);
+    let linkedLoads = await this.findLoadsForRouteMyTruck(searchAvailableLoadDto);
+    let count = 0;
+    while (linkedLoads.length === 0 && count < 2) {
+      count++;
+      searchAvailableLoadDto.stopPoints.forEach(stopPoint => {
+        stopPoint.radius = this.defaultRadius + count * 100;
+      });
+      linkedLoads = await this.findLoadsForRouteMyTruck(searchAvailableLoadDto);
+    }
 
     function generatePaths(node: LinkedLoad, path: Load[] = []): Load[][] {
       path = path.concat(node.current);
