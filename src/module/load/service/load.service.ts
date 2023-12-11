@@ -470,8 +470,8 @@ export class LoadService {
       loadsForRoute.forEach(load => {
         load.type = 'routeMyTruck';
         routeInfo.driveDistance +=
-          load.destinationDeadhead + load.destinationDeadhead + load.driveDistance ?? load.flyDistance ?? 0;
-        routeInfo.distance += routeInfo.driveDistance || routeInfo.flyDistance;
+          load.originDeadhead + load.destinationDeadhead + load.driveDistance ?? load.flyDistance ?? 0;
+        routeInfo.distance = routeInfo.driveDistance || routeInfo.flyDistance;
         routeInfo.duration += load.duration;
         routeInfo.amount += load.amount;
         routeInfo.deadhead += load.originDeadhead + load.destinationDeadhead;
