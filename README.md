@@ -60,6 +60,19 @@ $ npm run test:e2e
 $ npm run test:cov
 ```
 
+## Deployment
+
+```bash
+# build
+$ npm run build
+
+# login to vercel
+$ vercel login
+
+# deploy
+$ vercel --prod
+```
+
 ## Developer
 
 - Oai Vo - oai@coderpush.com
