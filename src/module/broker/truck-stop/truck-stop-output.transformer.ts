@@ -39,6 +39,10 @@ export class TruckStopOutputTransformer {
       };
       const deliveryInfo = await this.calculateInfo(input);
       if (!deliveryInfo) continue;
+
+      load.PickupDate = load.PickupDate ? load.PickupDate.trim() : '';
+      load.PickupTime = load.PickupTime ? load.PickupTime.trim() : '';
+
       loadModel.pickupStop = {
         address: deliveryInfo.originalPlaceName,
         city: load.OriginCity,
@@ -73,6 +77,10 @@ export class TruckStopOutputTransformer {
         searchAvailableLoadDto.stopPoints[1].location.coordinates
       );
       let deliveryDate = '';
+
+      load.DeliveryDate = load.DeliveryDate ? load.DeliveryDate.trim() : '';
+      load.DeliveryTime = load.DeliveryTime ? load.DeliveryTime.trim() : '';
+
       if (load.DeliveryDate && load.DeliveryTime) {
         // need convert to ISO
         deliveryDate = `${load.DeliveryDate} ${load.DeliveryTime}`;
