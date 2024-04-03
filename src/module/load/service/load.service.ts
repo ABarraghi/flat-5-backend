@@ -620,6 +620,9 @@ export class LoadService {
     distance = Loc.kilometersToMiles(
       Loc.distance(load.stopPoints[0].location.coordinates, load.stopPoints[1].location.coordinates)
     );
+    if (!distance) {
+      return true;
+    }
 
     return deadheadMiles / distance < this.maximumDeadheadMilesRate;
   }
@@ -631,6 +634,8 @@ export class LoadService {
     );
     const hoursDifference = dayjs(load.stopPoints[1].stopDate.from).diff(dayjs(load.stopPoints[0].stopDate.to), 'hour');
     const milesPerDay = (distance / hoursDifference) * 24;
+
+    if (!distance) return true;
 
     return milesPerDay <= 600;
   }

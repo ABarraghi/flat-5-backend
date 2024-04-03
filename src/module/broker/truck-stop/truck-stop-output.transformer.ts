@@ -22,13 +22,10 @@ export class TruckStopOutputTransformer {
   async searchAvailableLoads(value: TruckStopLoad[], searchAvailableLoadDto: SearchAvailableLoadDto): Promise<Load[]> {
     const loads: Load[] = [];
     if (!value || !value.length) return loads;
-    for (const load of value) {
-      const loadModel = new Load();
-      loadModel.broker = 'truckStop';
-      loadModel.loadId = load.ID.toString();
-      loadModel.originDeadhead = -1;
-      loadModel.destinationDeadhead = -1;
-
+    if (value.length > 10) {
+      value = value.slice(0, 10);
+    }
+    const deliveryPromises = value.map(load => {
       const input: TruckStopDeliveryAddressInfo = {
         originCity: load.OriginCity,
         originCountry: load.OriginState,
@@ -37,7 +34,29 @@ export class TruckStopOutputTransformer {
         destinationCountry: load.DestinationState,
         destinationState: load.DestinationCountry
       };
-      const deliveryInfo = await this.calculateInfo(input);
+
+      return this.calculateInfo(input);
+    });
+
+    const deliveryInfos = await Promise.all(deliveryPromises);
+
+    for (const load of value) {
+      const loadModel = new Load();
+      loadModel.broker = 'truckStop';
+      loadModel.loadId = load.ID.toString();
+      loadModel.originDeadhead = -1;
+      loadModel.destinationDeadhead = -1;
+
+      // const input: TruckStopDeliveryAddressInfo = {
+      //   originCity: load.OriginCity,
+      //   originCountry: load.OriginState,
+      //   originState: load.OriginCountry,
+      //   destinationCity: load.DestinationCity,
+      //   destinationCountry: load.DestinationState,
+      //   destinationState: load.DestinationCountry
+      // };
+      // const deliveryInfo = await this.calculateInfo(input);
+      const deliveryInfo = deliveryInfos.shift();
       if (!deliveryInfo) continue;
 
       load.PickupDate = load.PickupDate ? load.PickupDate.trim() : '';
