@@ -1,7 +1,4 @@
-import {
-  CoyoteGeoCoordinates,
-  CoyoteLoad
-} from '@module/broker/interface/coyote/coyote-response.interface';
+import { CoyoteGeoCoordinates, CoyoteLoad } from '@module/broker/interface/coyote/coyote-response.interface';
 
 export type CoyoteUnits = 'Miles' | 'Kilometers';
 export type CoyoteEquipmentTypes =
@@ -97,7 +94,7 @@ export class CoyoteInput {
 }
 
 export class CoyoteBookLoadSimpleInput {
-  carrierId: number;
+  carrierId?: number;
   loadId: number;
 }
 

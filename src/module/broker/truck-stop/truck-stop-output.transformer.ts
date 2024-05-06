@@ -42,7 +42,7 @@ export class TruckStopOutputTransformer {
 
     for (const load of value) {
       const loadModel = new Load();
-      loadModel.broker = 'truckStop';
+      loadModel.broker = 'truck_stop';
       loadModel.loadId = load.ID.toString();
       loadModel.originDeadhead = -1;
       loadModel.destinationDeadhead = -1;

@@ -1,3 +1,4 @@
+import * as dayjs from 'dayjs';
 import { Injectable } from '@nestjs/common';
 import { SearchAvailableLoadDto, StopPointDto } from '@module/load/validation/search-available-load.dto';
 import { ConfigService } from '@nestjs/config';
@@ -25,13 +26,14 @@ import { TruckStopOutputTransformer } from '@module/broker/truck-stop/truck-stop
 import { TruckStopInputTransformer } from '@module/broker/truck-stop/truck-stop-input.transformer';
 import { Logging } from '@core/logger/logging.service';
 import { Loc } from '@core/util/loc';
-import * as dayjs from 'dayjs';
 
 @Injectable()
 export class LoadService {
   maximumDeadheadMilesRate = 0.3;
+  maximumMilesPerDay = 600;
   count = 0;
   defaultRadius = 100;
+  maxSearchLoadPage = 10;
 
   constructor(
     private configService: ConfigService,
@@ -320,7 +322,7 @@ export class LoadService {
         return distanceToTargetPoint < remainingDistance;
       }
     });
-    console.log(validLoads.length);
+
     let count = 0;
     const result = [];
     for (const load of validLoads) {
@@ -507,9 +509,21 @@ export class LoadService {
     const loads: Load[] = [];
     if (this.configService.get('broker.coyote.enabled')) {
       const input = this.coyoteInputTransformer.searchAvailableLoads(searchAvailableLoadDto);
+      let currentPage = 1;
+
       try {
-        const coyoteLoads = await this.coyoteBrokerService.searchAvailableLoads(input);
-        loads.push(...this.coyoteOutputTransformer.searchAvailableLoads(coyoteLoads, searchAvailableLoadDto));
+        while (currentPage <= this.maxSearchLoadPage) {
+          const coyoteLoads = await this.coyoteBrokerService.searchAvailableLoads({
+            page: currentPage.toString(),
+            input
+          });
+
+          loads.push(...this.coyoteOutputTransformer.searchAvailableLoads(coyoteLoads, searchAvailableLoadDto));
+          if (!coyoteLoads.loads?.length) {
+            break;
+          }
+          currentPage++;
+        }
       } catch (error) {
         Logging.error('[Load Service - Coyote] Search Available Loads got error', error);
       }
@@ -560,7 +574,9 @@ export class LoadService {
     let validLoadsInEachDistance: Load[][] = [];
     for (const loadsInDistance of loadsInEachDistance) {
       const validLoadsInDistance = loadsInDistance.filter(load => {
-        return loadsInDistance.length && this.isStandardLoad(load);
+        const isStandardLoad = this.isStandardLoad(load);
+
+        return loadsInDistance.length && isStandardLoad;
       });
       if (validLoadsInDistance.length) {
         validLoadsInEachDistance.push(validLoadsInDistance);
@@ -594,14 +610,17 @@ export class LoadService {
     switch (bookLoadDto.broker) {
       case 'coyote':
         if (this.configService.get('broker.coyote.enabled')) {
-          const input = this.coyoteInputTransformer.bookLoad(bookLoadDto.loadId);
+          const input = this.coyoteInputTransformer.bookLoad(bookLoadDto);
 
           const bookingLoadId = await this.coyoteBrokerService.bookLoad(input);
 
           const bookingLoad = this.coyoteOutputTransformer.bookLoad(bookingLoadId);
           bookingLoad.loadId = input.loadId.toString();
-          bookingLoad.carrierId = input.carrierId.toString();
           bookingLoad.broker = bookLoadDto.broker;
+
+          if (input.carrierId) {
+            bookingLoad.carrierId = input.carrierId.toString();
+          }
 
           const createdCat = new this.bookingModel(bookingLoad);
           await createdCat.save();
@@ -617,9 +636,11 @@ export class LoadService {
   validateLoadByDeadheadMiles(load: Load): boolean {
     const deadheadMiles = load.originDeadhead + load.destinationDeadhead;
     let distance = 0;
+
     distance = Loc.kilometersToMiles(
       Loc.distance(load.stopPoints[0].location.coordinates, load.stopPoints[1].location.coordinates)
     );
+
     if (!distance) {
       return true;
     }
@@ -632,12 +653,15 @@ export class LoadService {
     const distance = Loc.kilometersToMiles(
       Loc.distance(load.stopPoints[0].location.coordinates, load.stopPoints[1].location.coordinates)
     );
-    const hoursDifference = dayjs(load.stopPoints[1].stopDate.from).diff(dayjs(load.stopPoints[0].stopDate.to), 'hour');
-    const milesPerDay = (distance / hoursDifference) * 24;
-
     if (!distance) return true;
 
-    return milesPerDay <= 600;
+    const hoursDifference = dayjs(load.stopPoints[1].stopDate.from).diff(dayjs(load.stopPoints[0].stopDate.to), 'hour');
+
+    if (hoursDifference === 0) return false;
+
+    const milesPerDay = (distance / Math.abs(hoursDifference)) * 24;
+
+    return milesPerDay <= this.maximumMilesPerDay;
   }
 
   validateLoadIsBetween2Points(load: Load): boolean {

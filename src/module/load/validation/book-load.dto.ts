@@ -10,4 +10,7 @@ export class BookLoadDto extends BaseSearchDto {
   @IsString()
   @IsNotEmpty()
   loadId: string;
+
+  @IsString()
+  carrierId: string;
 }

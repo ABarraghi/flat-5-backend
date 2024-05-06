@@ -21,6 +21,7 @@ import { DISTANCE_UNIT_DEFAULT } from '@module/broker/interface/flat-5/load.inte
 import { IsAfterNow } from '@core/util/validation/validator/is-after-now';
 import { IsBefore } from '@core/util/validation/validator/is-before';
 import { IsAfter } from '@core/util/validation/validator/is-after';
+import { ApiBrokers } from '@module/broker/interface/flat-5/common.interface';
 
 export class CoordinateDto {
   @IsLatitude()
@@ -114,7 +115,7 @@ export class SearchAvailableLoadDto extends BaseSearchDto {
   shipmentFormat: string;
 
   @IsOptional()
-  brokers: ('coyote' | 'dat' | 'truck_stop')[];
+  brokers: ApiBrokers[];
 
   @IsOptional()
   isReturnOrigin: boolean;

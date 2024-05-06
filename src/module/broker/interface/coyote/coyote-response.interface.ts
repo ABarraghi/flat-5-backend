@@ -15,14 +15,31 @@ export type CoyoteAddress = {
 
 export type CoyoteDateTimeUtc = string; // You can use a more specific type for date/time if needed
 
+export type CoyoteCurrencyType =
+  | 'Undefined'
+  | 'USD'
+  | 'CAD'
+  | 'MXN'
+  | 'ARS'
+  | 'BRL'
+  | 'CLP'
+  | 'COP'
+  | 'VEF'
+  | 'EUR'
+  | 'GBP'
+  | 'HUF'
+  | 'PLN';
+
 export type CoyoteCurrency = {
   value: number;
-  currencyType: string;
+  currencyType: CoyoteCurrencyType;
 };
+
+export type CoyoteWeightUnit = 'Undefined' | 'Pounds' | 'Kilograms' | 'Tons' | 'MetricTons';
 
 export type CoyoteWeight = {
   value: number;
-  unit: string;
+  unit: CoyoteWeightUnit;
 };
 
 export type CoyoteCommodity = {
@@ -52,7 +69,7 @@ export type CoyoteStopDetails = {
   genericAttributes: string[]; // Use a more specific type if possible
 };
 
-type CoyoteStop = {
+export type CoyoteStop = {
   sequence: number;
   stopType:
     | 'None'
@@ -100,7 +117,7 @@ type Temperature = {
 
 export type CoyoteLoadDetails = {
   rate: CoyoteCurrency;
-  mode: string;
+  mode: 'TL' | 'LTL' | 'IMDL';
   equipment: CoyoteEquipment;
   loadDistance: CoyoteLoadDistance;
   weight: CoyoteWeight;
@@ -110,13 +127,16 @@ export type CoyoteLoadDetails = {
     minimumTemperature: Temperature;
   };
   loadAttributes: CoyoteLoadAttributes;
-  genericAttributes: string[]; // Use a more specific type if possible
+  genericAttributes?: {
+    key: string;
+    displayText: string;
+  }[];
 };
 
 export type CoyoteLoad = {
   loadId: number;
-  loadDetails?: CoyoteLoadDetails;
-  stops?: CoyoteStop[];
+  loadDetails: CoyoteLoadDetails;
+  stops: CoyoteStop[];
 };
 
 export type CoyoteAuthenticationResponse = {
@@ -126,6 +146,11 @@ export type CoyoteAuthenticationResponse = {
 };
 
 export type CoyoteSearchLoadResponse = {
+  pagination: {
+    limit: number;
+    offset: number;
+    totalCount: number;
+  };
   loads: CoyoteLoad[];
 };
 
@@ -134,3 +159,10 @@ export type TruckStopSearchLoadResponse = {
 };
 
 export type CoyoteLoadDetailResponse = CoyoteLoad;
+
+export type CoyoteBookingStatusResponse = {
+  loadId: number;
+  carrierId: number;
+  status: 'InProgress' | 'Booked' | 'Failed';
+  validationMessages?: string[];
+};

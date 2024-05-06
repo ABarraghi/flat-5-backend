@@ -1,6 +1,7 @@
+import * as dayjs from 'dayjs';
 import { ApiBrokers } from '@module/broker/interface/flat-5/common.interface';
 import { StopPointDto } from '@module/load/validation/search-available-load.dto';
-import * as dayjs from 'dayjs';
+import { CoyoteBookingStatusResponse, CoyoteLoadDetails, CoyoteStop } from '../coyote/coyote-response.interface';
 
 export const DISTANCE_UNIT_DEFAULT = 'Miles';
 export type GeoCoordinates = {
@@ -28,10 +29,12 @@ export type Stop = {
 };
 
 export class Load {
+  loadId: string;
+  loadDetails: CoyoteLoadDetails;
+  stops: CoyoteStop[];
   keyByPoints: string;
   stopPoints: StopPointDto[];
   broker: ApiBrokers;
-  loadId: string;
   pickupStop: Stop;
   deliveryStop: Stop;
   rate: number;
@@ -73,17 +76,17 @@ export class Load {
 }
 
 export class BookingLoad {
+  bookingId: string;
+  loadId: string;
+  carrierId: string;
+  broker: string;
+
   constructor(props: { loadId?: string; bookingId: string; carrierId?: string; broker?: string }) {
     this.loadId = props.loadId;
     this.bookingId = props.bookingId;
     this.carrierId = props.carrierId;
     this.broker = props.broker;
   }
-
-  bookingId: string;
-  loadId: string;
-  carrierId: string;
-  broker: string;
 }
 
 export class RouteInfo {
@@ -163,4 +166,18 @@ export class FindLoadContext {
 export class LinkedLoad {
   current: Load;
   next: LinkedLoad[];
+}
+
+export class BookingStatus {
+  loadId: number;
+  carrierId: number;
+  status: 'InProgress' | 'Booked' | 'Failed';
+  validationMessages: string[];
+
+  constructor(props: CoyoteBookingStatusResponse) {
+    this.loadId = props.loadId;
+    this.carrierId = props.carrierId;
+    this.status = props.status;
+    this.validationMessages = props.validationMessages;
+  }
 }

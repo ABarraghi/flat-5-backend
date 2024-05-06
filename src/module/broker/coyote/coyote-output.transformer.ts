@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { BookingLoad, Load } from '@module/broker/interface/flat-5/load.interface';
+import { BookingLoad, BookingStatus, Load } from '@module/broker/interface/flat-5/load.interface';
 import {
   CoyoteAddress,
+  CoyoteBookingStatusResponse,
   CoyoteLoad,
   CoyoteSearchLoadResponse
 } from '@module/broker/interface/coyote/coyote-response.interface';
@@ -23,6 +24,8 @@ export class CoyoteOutputTransformer {
       const loadModel = new Load();
       loadModel.broker = 'coyote';
       loadModel.loadId = load.loadId.toString();
+      loadModel.loadDetails = load.loadDetails;
+      loadModel.stops = load.stops;
       loadModel.originDeadhead = null;
       loadModel.destinationDeadhead = null;
       const pickupStop = load.stops.find(stop => stop.stopType === 'Pickup');
@@ -138,6 +141,10 @@ export class CoyoteOutputTransformer {
 
   bookLoad(value: any): any {
     return new BookingLoad({ bookingId: value });
+  }
+
+  getBookingStatus(value: CoyoteBookingStatusResponse): any {
+    return new BookingStatus(value);
   }
 
   buildAddress(address: CoyoteAddress): string {

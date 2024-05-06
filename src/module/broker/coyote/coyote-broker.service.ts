@@ -1,3 +1,4 @@
+import * as dayjs from 'dayjs';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import {
   CoyoteBookLoadInput,
@@ -7,10 +8,10 @@ import {
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { catchError, firstValueFrom } from 'rxjs';
-import * as dayjs from 'dayjs';
 import { Logging } from '@core/logger/logging.service';
 import {
   CoyoteAuthenticationResponse,
+  CoyoteBookingStatusResponse,
   CoyoteLoadDetailResponse,
   CoyoteSearchLoadResponse
 } from '@module/broker/interface/coyote/coyote-response.interface';
@@ -60,7 +61,13 @@ export class CoyoteBrokerService {
     return `Bearer ${this.accessToken}`;
   }
 
-  async searchAvailableLoads(input: CoyoteInput): Promise<CoyoteSearchLoadResponse> {
+  async searchAvailableLoads({
+    page = '1',
+    input
+  }: {
+    page: string;
+    input: CoyoteInput;
+  }): Promise<CoyoteSearchLoadResponse> {
     const url = `${this.coyoteConfig.host}/${this.coyoteConfig.apiPrefix}/AvailableLoads/search`;
     const request = this.httpService
       .post<CoyoteSearchLoadResponse>(url, input, {
@@ -68,7 +75,7 @@ export class CoyoteBrokerService {
           Authorization: await this.generateAccessToken()
         },
         params: new URLSearchParams({
-          page: '1',
+          page,
           pageSize: '50'
         })
       })
@@ -120,6 +127,25 @@ export class CoyoteBrokerService {
         catchError(e => {
           Logging.error('[Coyote Service] Book Load got error', e);
           throw new BadRequestException('CYT004');
+        })
+      );
+    const res = await firstValueFrom(request);
+
+    return res.data;
+  }
+
+  async getBookingStatus(bookingId: string): Promise<CoyoteBookingStatusResponse> {
+    const url = `${this.coyoteConfig.host}/${this.coyoteConfig.apiPrefix}/Booking/${bookingId}/status`;
+    const request = this.httpService
+      .get<CoyoteBookingStatusResponse>(url, {
+        headers: {
+          Authorization: await this.generateAccessToken()
+        }
+      })
+      .pipe(
+        catchError(e => {
+          Logging.error('[Coyote Service] Get Booking status got error', e);
+          throw new BadRequestException('CYT003');
         })
       );
     const res = await firstValueFrom(request);

@@ -1,9 +1,10 @@
-import { CoyoteEquipmentTypes, CoyoteInput } from '@module/broker/interface/coyote/coyote-input.interface';
-import { SearchAvailableLoadDto } from '@module/load/validation/search-available-load.dto';
-import { Injectable } from '@nestjs/common';
 import * as dayjs from 'dayjs';
 import * as utc from 'dayjs/plugin/utc';
+import { Injectable } from '@nestjs/common';
+import { CoyoteEquipmentTypes, CoyoteInput } from '@module/broker/interface/coyote/coyote-input.interface';
+import { SearchAvailableLoadDto } from '@module/load/validation/search-available-load.dto';
 import { DISTANCE_UNIT_DEFAULT } from '@module/broker/interface/flat-5/load.interface';
+import { BookLoadDto } from '@module/load/validation/book-load.dto';
 
 dayjs.extend(utc);
 
@@ -77,10 +78,19 @@ export class CoyoteInputTransformer {
     return +loadId;
   }
 
-  bookLoad(loadId: string) {
-    return {
-      loadId: +loadId,
-      carrierId: 194536367
+  bookLoad(bookLoadDto: BookLoadDto) {
+    const result: any = {
+      loadId: +bookLoadDto.loadId
     };
+
+    if ('carrierId' in bookLoadDto) {
+      result.carrierId = +bookLoadDto.carrierId;
+    }
+
+    return result;
+  }
+
+  getBookingStatus(bookingId: string): string {
+    return bookingId;
   }
 }

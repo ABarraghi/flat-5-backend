@@ -8,7 +8,7 @@ import { BookLoadDto } from '@module/load/validation/book-load.dto';
 export class LoadController {
   constructor(private readonly loadService: LoadService) {}
 
-  @Post('available')
+  @Post('standard')
   searchStandard(@Body() searchAvailableLoadDto: SearchAvailableLoadDto) {
     return this.loadService.searchStandard(searchAvailableLoadDto);
   }
