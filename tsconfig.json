@@ -18,15 +18,9 @@
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
     "paths": {
-      "@core/*": [
-        "src/core/*"
-      ],
-      "@module/*": [
-        "src/module/*"
-      ],
-      "@config/*": [
-        "src/config/*"
-      ]
+      "@core/*": ["src/core/*"],
+      "@module/*": ["src/module/*"],
+      "@config/*": ["src/config/*"]
     }
   }
 }

@@ -11,6 +11,7 @@ import { AllExceptionsFilter } from '@core/filter/all-exception.filter';
 import { LoggingModule } from '@core/logger/logging.module';
 import { LoadModule } from '@module/load/load.module';
 import { MongooseModule } from '@nestjs/mongoose';
+import { AuthModule } from './module/auth/auth.module';
 
 @Module({
   imports: [
@@ -21,8 +22,9 @@ import { MongooseModule } from '@nestjs/mongoose';
     }),
     LoggingModule,
     ExceptionModule,
-    MongooseModule.forRoot('mongodb+srv://flat-local:hgvxvCjQQFJz3PSi@cluster-for-local.bdpwm99.mongodb.net/flat-5'),
-    LoadModule
+    MongooseModule.forRoot(process.env.MONGODB_URL),
+    LoadModule,
+    AuthModule
   ],
   controllers: [AppController],
   providers: [
