@@ -4,6 +4,7 @@ import { SearchAvailableLoadDto, StopPointDto } from '@module/load/validation/se
 import { ConfigService } from '@nestjs/config';
 import { CoyoteBrokerService } from '@module/broker/coyote/coyote-broker.service';
 import {
+  BookingLoad,
   FindLoadContext,
   LinkedLoad,
   Load,
@@ -12,9 +13,6 @@ import {
 } from '@module/broker/interface/flat-5/load.interface';
 import { ApiBrokers } from '@module/broker/interface/flat-5/common.interface';
 import { BookLoadDto } from '@module/load/validation/book-load.dto';
-import { InjectModel } from '@nestjs/mongoose';
-import { Booking } from '@module/load/schema/booking.schema';
-import { Model } from 'mongoose';
 import { DatBrokerService } from '@module/broker/dat/dat-broker.service';
 import { CoyoteInputTransformer } from '@module/broker/coyote/coyote-input.transformer';
 import { CoyoteOutputTransformer } from '@module/broker/coyote/coyote-output.transformer';
@@ -26,11 +24,12 @@ import { TruckStopOutputTransformer } from '@module/broker/truck-stop/truck-stop
 import { TruckStopInputTransformer } from '@module/broker/truck-stop/truck-stop-input.transformer';
 import { Logging } from '@core/logger/logging.service';
 import { Loc } from '@core/util/loc';
+import { BookingService } from '@module/booking/service/booking.service';
 
 @Injectable()
 export class LoadService {
-  maximumDeadheadMilesRate = 0.3;
-  maximumMilesPerDay = 600;
+  maximumDeadheadMilesRate = 3;
+  maximumMilesPerDay = 2500;
   count = 0;
   defaultRadius = 100;
   maxSearchLoadPage = 10;
@@ -46,7 +45,7 @@ export class LoadService {
     private truckStopInputTransformer: TruckStopInputTransformer,
     private truckStopOutputTransformer: TruckStopOutputTransformer,
     private truckStopBrokerService: TruckStopBrokerService,
-    @InjectModel(Booking.name) private bookingModel: Model<Booking>
+    private bookingService: BookingService
   ) {}
 
   async searchAvailableLoadsBetween2Points(
@@ -614,7 +613,7 @@ export class LoadService {
 
           const bookingLoadId = await this.coyoteBrokerService.bookLoad(input);
 
-          const bookingLoad = this.coyoteOutputTransformer.bookLoad(bookingLoadId);
+          const bookingLoad: BookingLoad = this.coyoteOutputTransformer.bookLoad(bookingLoadId);
           bookingLoad.loadId = input.loadId.toString();
           bookingLoad.broker = bookLoadDto.broker;
 
@@ -622,8 +621,7 @@ export class LoadService {
             bookingLoad.carrierId = input.carrierId.toString();
           }
 
-          const createdCat = new this.bookingModel(bookingLoad);
-          await createdCat.save();
+          await this.bookingService.create(bookingLoad);
 
           return bookingLoad;
         }

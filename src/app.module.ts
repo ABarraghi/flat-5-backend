@@ -22,7 +22,9 @@ import { AuthModule } from './module/auth/auth.module';
     }),
     LoggingModule,
     ExceptionModule,
-    MongooseModule.forRoot(process.env.MONGODB_URL),
+    MongooseModule.forRoot(
+      process.env.MONGODB_URL || 'mongodb+srv://flatfive:PcFNxuiCXvvw3Ce7@cluster0.8ad0wnd.mongodb.net'
+    ),
     LoadModule,
     AuthModule
   ],
