@@ -19,7 +19,11 @@ async function bootstrap() {
     }
   });
 
-  app.enableCors();
+  app.enableCors({
+    allowedHeaders: ['content-type'],
+    origin: ['http://localhost:3000', 'https://flat-5-frontend.vercel.app'],
+    credentials: true
+  });
   app.use(compression());
   // Now everywhere you can inject Validator class which will go from the container
   useContainer(app.select(AppModule), {
