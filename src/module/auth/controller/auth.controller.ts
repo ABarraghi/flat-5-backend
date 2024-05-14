@@ -18,7 +18,12 @@ export class AuthController {
     const { email, password } = body;
     const { access_token } = await this.authService.signIn(email, password);
 
-    res.cookie('jwt', access_token, { httpOnly: true });
+    res.cookie('jwt', access_token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none',
+      expires: new Date(Date.now() + 7 * 24 * 3600 * 1000) // 1 week
+    });
 
     return res.status(HttpStatus.OK).send({ access_token });
   }

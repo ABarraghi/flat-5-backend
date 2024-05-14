@@ -28,7 +28,15 @@ export class BookingService {
   async getBookingList(userId: string): Promise<any> {
     const userObjectId = new Types.ObjectId(userId);
 
-    return this.bookingModel.find({ user: userObjectId }, '-name', { lean: true });
+    const listData = await this.bookingModel.find({ user: userObjectId }, '-name', { lean: true });
+
+    const list = listData.map(booking => ({
+      ...booking,
+      _id: booking._id.toString(),
+      user: booking.user.toString()
+    }));
+
+    return list;
   }
 
   async getBookingDetail(bookingId: string): Promise<any> {
