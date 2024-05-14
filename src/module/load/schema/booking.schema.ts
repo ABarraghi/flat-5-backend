@@ -1,5 +1,6 @@
+import { HydratedDocument, SchemaTypes } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
+import { User } from '@module/user/schema/user.schema';
 
 export type BookingDocument = HydratedDocument<Booking>;
 
@@ -16,6 +17,9 @@ export class Booking {
 
   @Prop()
   carrierId: string;
+
+  @Prop({ type: SchemaTypes.ObjectId, ref: User.name })
+  user: User;
 }
 
 export const BookingSchema = SchemaFactory.createForClass(Booking);

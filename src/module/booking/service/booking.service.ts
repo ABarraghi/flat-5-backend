@@ -1,4 +1,4 @@
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ConfigService } from '@nestjs/config';
@@ -23,6 +23,16 @@ export class BookingService {
     const createdBooking = new this.bookingModel(createBookingDto);
 
     return createdBooking.save();
+  }
+
+  async getBookingList(userId: string): Promise<any> {
+    const userObjectId = new Types.ObjectId(userId);
+
+    return this.bookingModel.find({ user: userObjectId }, '-name', { lean: true });
+  }
+
+  async getBookingDetail(bookingId: string): Promise<any> {
+    return this.bookingModel.findOne({ bookingId });
   }
 
   async getBookingStatus(broker: ApiBrokers, bookingId: string): Promise<any> {

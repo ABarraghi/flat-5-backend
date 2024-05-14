@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UseGuards, Req } from '@nestjs/common';
 import { LoadService } from '@module/load/service/load.service';
 import { SearchAvailableLoadDto } from '@module/load/validation/search-available-load.dto';
 import { ApiBrokers, isApiBroker } from '@module/broker/interface/flat-5/common.interface';
@@ -35,8 +35,15 @@ export class LoadController {
 
   @UseGuards(AuthGuard)
   @Post('book')
-  bookLoad(@Body() bookLoadDto: BookLoadDto) {
-    return this.loadService.bookLoad(bookLoadDto);
+  bookLoad(@Req() request, @Body() bookLoadDto: BookLoadDto) {
+    const userId = request.user.id;
+
+    const bookLoad = {
+      ...bookLoadDto,
+      user: userId
+    };
+
+    return this.loadService.bookLoad(bookLoad);
   }
 
   @Post('test')

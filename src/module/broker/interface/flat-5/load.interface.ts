@@ -80,12 +80,14 @@ export class BookingLoad {
   loadId: string;
   carrierId: string;
   broker: string;
+  user: string;
 
-  constructor(props: { loadId?: string; bookingId: string; carrierId?: string; broker?: string }) {
+  constructor(props: { loadId?: string; bookingId: string; carrierId?: string; broker?: string; user?: string }) {
     this.loadId = props.loadId;
     this.bookingId = props.bookingId;
     this.carrierId = props.carrierId;
     this.broker = props.broker;
+    this.user = props.user;
   }
 }
 

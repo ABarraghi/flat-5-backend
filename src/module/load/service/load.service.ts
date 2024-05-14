@@ -614,8 +614,9 @@ export class LoadService {
           const bookingLoadId = await this.coyoteBrokerService.bookLoad(input);
 
           const bookingLoad: BookingLoad = this.coyoteOutputTransformer.bookLoad(bookingLoadId);
-          bookingLoad.loadId = input.loadId.toString();
+          bookingLoad.loadId = input.loadId;
           bookingLoad.broker = bookLoadDto.broker;
+          bookingLoad.user = bookLoadDto.user;
 
           if (input.carrierId) {
             bookingLoad.carrierId = input.carrierId.toString();

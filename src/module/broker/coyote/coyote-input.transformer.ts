@@ -90,6 +90,10 @@ export class CoyoteInputTransformer {
     return result;
   }
 
+  getBookingDetail(bookingId: string): string {
+    return bookingId;
+  }
+
   getBookingStatus(bookingId: string): string {
     return bookingId;
   }
