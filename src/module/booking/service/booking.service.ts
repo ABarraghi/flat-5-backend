@@ -25,22 +25,31 @@ export class BookingService {
     return createdBooking.save();
   }
 
+  transformBooking(bookingData) {
+    const booking = {
+      ...bookingData,
+      _id: bookingData._id.toString(),
+      user: bookingData.user.toString()
+    };
+
+    return booking;
+  }
+
   async getBookingList(userId: string): Promise<any> {
     const userObjectId = new Types.ObjectId(userId);
 
     const listData = await this.bookingModel.find({ user: userObjectId }, '-name', { lean: true });
 
-    const list = listData.map(booking => ({
-      ...booking,
-      _id: booking._id.toString(),
-      user: booking.user.toString()
-    }));
+    const list = listData.map(booking => this.transformBooking(booking));
 
     return list;
   }
 
   async getBookingDetail(bookingId: string): Promise<any> {
-    return this.bookingModel.findOne({ bookingId });
+    const bookingData = await this.bookingModel.findOne({ _id: bookingId }, '-name', { lean: true });
+    const booking = this.transformBooking(bookingData);
+
+    return booking;
   }
 
   async getBookingStatus(broker: ApiBrokers, bookingId: string): Promise<any> {
