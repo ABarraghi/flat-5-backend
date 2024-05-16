@@ -4,7 +4,7 @@ import { User } from '@module/user/schema/user.schema';
 
 export type BookingDocument = HydratedDocument<Booking>;
 
-@Schema()
+@Schema({ timestamps: true })
 export class Booking {
   @Prop()
   broker: string;
@@ -20,6 +20,9 @@ export class Booking {
 
   @Prop({ type: SchemaTypes.ObjectId, ref: User.name })
   user: User;
+
+  @Prop({ type: SchemaTypes.Mixed })
+  loadData: any;
 }
 
 export const BookingSchema = SchemaFactory.createForClass(Booking);
