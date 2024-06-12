@@ -283,11 +283,12 @@ export class LoadService {
       newSearchAvailableLoadDto,
       findLoadContext.loadKeyByPoints
     );
+
     const validLoads = loads.filter(load => {
       if (load.deliveryStop && load.deliveryStop.appointment && load.deliveryStop.appointment.endTime) {
         const deliveryDate = dayjs(load.deliveryStop.appointment.endTime);
         const remainingDays = targetDate.diff(deliveryDate, 'day');
-        const remainingDistance = remainingDays * 600;
+        const remainingDistance = remainingDays * this.maximumMilesPerDay;
 
         const distanceToTargetPoint = Loc.distanceInMiles(
           targetStopPoint.location.coordinates,
@@ -302,11 +303,10 @@ export class LoadService {
         return distanceToTargetPoint < remainingDistance;
       } else {
         // if (load.deliveryStop && load.deliveryStop.coordinates) {
-        // just assuming that driver can drive 600 miles per day
         const distanceForThisLoad = load.originDeadhead + load.driveDistance + load.destinationDeadhead;
-        const daysForThisLoad = Math.round(distanceForThisLoad / 600);
+        const daysForThisLoad = Math.round(distanceForThisLoad / this.maximumMilesPerDay);
         const remainingDays = findLoadContext.remainingDays - daysForThisLoad;
-        const remainingDistance = remainingDays * 600;
+        const remainingDistance = remainingDays * this.maximumMilesPerDay;
 
         const distanceToTargetPoint = Loc.distanceInMiles(
           targetStopPoint.location.coordinates,
@@ -338,7 +338,7 @@ export class LoadService {
         location: {
           coordinates: load.deliveryStop.coordinates
         },
-        radius: 100
+        radius: this.defaultRadius
       };
       let remainingDistance = 0;
       let remainingDays = 0;
@@ -351,7 +351,7 @@ export class LoadService {
         };
         deliveryDate = dayjs(load.deliveryStop.appointment.endTime);
         remainingDays = targetDate.diff(deliveryDate, 'day');
-        remainingDistance = remainingDays * 600;
+        remainingDistance = remainingDays * this.maximumMilesPerDay;
         newFindLoadContext = new FindLoadContext({
           ...findLoadContext,
           stopPoints: [newStopPoint, targetStopPoint],
@@ -360,9 +360,8 @@ export class LoadService {
         });
       } else {
         // if (load.deliveryStop && load.deliveryStop.coordinates) {
-        // just assuming that driver can drive 600 miles per day
         const distanceForThisLoad = load.originDeadhead + load.driveDistance + load.destinationDeadhead;
-        const daysForThisLoad = Math.round(distanceForThisLoad / 600);
+        const daysForThisLoad = Math.round(distanceForThisLoad / this.maximumMilesPerDay);
         newStopPoint['stopDate'] = {
           from: dayjs(findLoadContext.stopPoints[0].stopDate.to).add(daysForThisLoad, 'day').format(),
           to: dayjs(findLoadContext.stopPoints[0].stopDate.to)
@@ -370,7 +369,7 @@ export class LoadService {
             .format()
         };
         const remainingDays = findLoadContext.remainingDays - daysForThisLoad;
-        const remainingDistance = remainingDays * 600;
+        const remainingDistance = remainingDays * this.maximumMilesPerDay;
         newStopPoint.location.city = load.deliveryStop.city;
         newStopPoint.location.state = load.deliveryStop.state;
         newFindLoadContext = new FindLoadContext({
@@ -399,6 +398,7 @@ export class LoadService {
   async routeMyTruck(searchAvailableLoadDto: SearchAvailableLoadDto): Promise<Load[][] | any> {
     const searchAvailableLoadsResponse = new SearchAvailableLoadsResponse();
     this.count = 0;
+
     searchAvailableLoadDto.stopPoints.forEach(stopPoint => {
       stopPoint.radius = this.defaultRadius;
     });
@@ -412,7 +412,7 @@ export class LoadService {
     while (linkedLoads.length === 0 && count < 2) {
       count++;
       searchAvailableLoadDto.stopPoints.forEach(stopPoint => {
-        stopPoint.radius = this.defaultRadius + count * 100;
+        stopPoint.radius = this.defaultRadius + count * this.defaultRadius;
       });
       linkedLoads = await this.findLoadsForRouteMyTruck(searchAvailableLoadDto);
     }
