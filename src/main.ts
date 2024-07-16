@@ -21,7 +21,7 @@ async function bootstrap() {
 
   app.enableCors({
     allowedHeaders: ['content-type'],
-    origin: ['http://localhost:3000', 'https://flat-5-frontend.vercel.app', 'https://flat-5-frontend-two.vercel.app/'],
+    origin: ['http://localhost:3000', 'https://flat-5-frontend.vercel.app', 'https://flat-5-frontend-two.vercel.app'],
     credentials: true
   });
   app.use(compression());
